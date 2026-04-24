@@ -2,112 +2,178 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none'; frame-ancestors 'none';">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Skin Cell Stimulation — Dashboard</title>
-
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self';
-  style-src 'self';
-  font-src 'self';
-  img-src 'self' data:;
-  connect-src 'self';
-  object-src 'none';
-  base-uri 'self';
-">
-<link rel="stylesheet" href="./assets/css/style.css">
-<link rel="stylesheet" href="./assets/css/dashboard.css">
+<title>Skin Cell Stimulation — Literature Review Dashboard</title>
+<script src="./assets/js/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous" defer></script>
 <link rel="stylesheet" href="./assets/css/fonts.css">
-
-<script src="./assets/js/d3.min.js" defer></script>
-<script src="./assets/js/app.js" defer></script>
+<link rel="stylesheet" href="./assets/css/dashboard.css">
 </head>
+<body>
 
-<body class="dashboard">
-
-<header class="header">
-  <div>
-    <h1>Skin Cell <span>Stimulation</span></h1>
-    <p>Mechanical & Electrical · Fibroblasts & Keratinocytes</p>
+<header>
+  <div class="header-title">
+    <h1>Skin Cell <em>Stimulation</em><br>Literature Review</h1>
+    <p>Mechanical &amp; Electrical · Fibroblasts &amp; Keratinocytes</p>
   </div>
-
-  <div id="header-stats"></div>
-
-  <button id="theme-btn" type="button">☀︎ Light</button>
+  <div class="header-stats" id="header-stats"></div>
+  <button class="theme-btn" id="theme-btn" data-action="theme" title="Toggle light/dark mode">☀︎ Light</button>
 </header>
 
+<div class="citation-bar">
+  <span>
+    <strong style="color:var(--text-dim)">Dataset:</strong>
+    Burgess, Marsh, Lucian &amp; Nair (2026) — <em>A Data-Driven Review of in vitro Electrical and Mechanical Stimulation for Post-Inflammatory Wound Healing</em>.
+    University of Oxford · Institute of Biomedical Engineering.
+    <a href="https://doi.org/XXXXXX" id="paper-doi-link" target="_blank" title="Link will update when paper DOI is assigned">DOI: pending</a>
+    &nbsp;·&nbsp;
+    <a href="https://smart-biomaterials.com" target="_blank">SMART-Biomaterials Lab</a>
+  </span>
+  <div class="source-toggle" title="Filter by data source">
+    <button class="source-btn active" data-source="all" data-action="source" data-source="all">All sources</button>
+    <button class="source-btn" data-source="Burgess2026" data-action="source" data-source="Burgess2026">Paper only</button>
+  </div>
+</div>
+
+<div class="upload-bar">
+  <strong>Open dataset.</strong> Add new studies via pull request — see the "Contribute" tab.
+  <button class="upload-btn" data-action="upload-trigger">⊕ Load local data.json</button>
+  <input type="file" id="file-input" accept=".json">
+</div>
+
 <div class="app">
-
-  <!-- ── SIDEBAR ───────────────────────── -->
   <aside>
-
     <div class="filter-section">
-      <div class="filter-label">Modality</div>
-      <div id="filter-modality" class="chip-group"></div>
+      <div class="filter-label">Stimulation Modality</div>
+      <div class="chip-group" id="filter-modality"></div>
     </div>
-
     <div class="filter-section">
       <div class="filter-label">Cell Type</div>
-      <div id="filter-cell" class="chip-group"></div>
-
-      <label>
-        <input type="checkbox" id="mixed-toggle">
-        Include mixed
-      </label>
+      <div class="chip-group" id="filter-cell"></div>
+      <div class="mixed-toggle-row">
+        <input type="checkbox" id="mixed-toggle" data-action="mixed-toggle">
+        <label for="mixed-toggle">Include "Mixed" co-cultures</label>
+      </div>
+      <div class="mixed-note">Mixed = studies where fibroblasts &amp; keratinocytes were co-cultured or in tissue equivalents. Excluded from per-cell-type analyses by default.</div>
     </div>
-
     <div class="filter-section">
-      <div class="filter-label">Outcome</div>
-      <div id="filter-outcome" class="chip-group"></div>
+      <div class="filter-label">Outcome Type</div>
+      <div class="chip-group" id="filter-outcome"></div>
     </div>
-
     <div class="filter-section">
-      <div class="filter-label">Model</div>
-      <div id="filter-model" class="chip-group"></div>
+      <div class="filter-label">Experimental Model</div>
+      <div class="chip-group" id="filter-model"></div>
     </div>
-
     <div class="filter-section">
-      <div class="filter-label">Fold Change</div>
-      <input type="range" id="fc-min" min="0" max="5" step="0.1">
-      <input type="range" id="fc-max" min="0" max="5" step="0.1">
+      <div class="filter-label">Fold Change Range</div>
+      <div class="range-filter">
+        <label>Min <span id="fc-min-val"></span></label>
+        <input type="range" id="fc-min" min="0" max="5" step="0.1" value="0">
+      </div>
+      <div class="range-filter">
+        <label>Max <span id="fc-max-val"></span></label>
+        <input type="range" id="fc-max" min="0" max="5" step="0.1" value="5">
+      </div>
     </div>
-
+    <button class="sidebar-reset" data-action="reset">↺ Reset all filters</button>
   </aside>
 
-  <!-- ── MAIN ──────────────────────────── -->
   <main>
-
-    <div class="controls">
-      <button class="source-btn active" data-source="all">All</button>
-      <button class="source-btn" data-source="Burgess2026">Paper</button>
-    </div>
-
     <div class="tabs">
-      <button class="tab active" data-tab="scatter">Scatter</button>
-      <button class="tab" data-tab="dose">Dose</button>
+      <button class="tab active" data-tab="scatter" data-action="tab" data-tab="scatter">Scatter</button>
+      <button class="tab" data-tab="box" data-action="tab" data-tab="box">Distributions</button>
+      <button class="tab" data-tab="freq" data-action="tab" data-tab="freq">Frequency</button>
+      <button class="tab" data-tab="duration" data-action="tab" data-tab="duration">Duration</button>
+      <button class="tab" data-tab="dose" data-action="tab" data-tab="dose">Dose Response</button>
+      <button class="tab" data-tab="contribute" data-action="tab" data-tab="contribute">Contribute</button>
     </div>
 
-    <div id="tab-scatter" class="panel">
-      
-      <div class="legend-controls">
-        <button class="legend-btn active" data-color="modality">Modality</button>
-        <button class="legend-btn" data-color="outcome">Outcome</button>
+    <div class="panel" id="tab-scatter">
+      <div class="chart-title">Fold Change vs Stimulation Duration</div>
+      <div class="chart-subtitle">Each point = one experimental condition. Hover for paper details. Click to open paper. <span class="data-badge" id="scatter-count"></span></div>
+      <div class="legend" id="scatter-legend"></div>
+      <div id="scatter-chart"></div>
+    </div>
+
+    <div class="panel panel-hidden" id="tab-box">
+      <div class="chart-title">Fold Change Distributions by Group</div>
+      <div class="chart-subtitle">Box + jitter plot by modality × outcome type. <span class="data-badge" id="box-count"></span></div>
+      <div id="box-chart"></div>
+    </div>
+
+    <div class="panel panel-hidden" id="tab-freq">
+      <div class="chart-title">Effect of Stimulation Frequency on Outcome</div>
+      <div class="chart-subtitle">Fold change vs frequency (Hz), log-scaled. <span class="data-badge" id="freq-count"></span></div>
+      <div class="legend" id="freq-legend"></div>
+      <div id="freq-chart"></div>
+    </div>
+
+    <div class="panel panel-hidden" id="tab-duration">
+      <div class="chart-title">Stimulation Duration vs Fold Change</div>
+      <div class="chart-subtitle">Grouped by outcome type. Log x-axis (hours). <span class="data-badge" id="dur-count"></span></div>
+      <div class="legend" id="dur-legend"></div>
+      <div id="dur-chart"></div>
+    </div>
+
+    <div class="panel panel-hidden" id="tab-dose">
+      <div class="chart-title">Dose-Response: Charge, Energy &amp; Power</div>
+      <div class="chart-subtitle">Electrical stimulation only. KDE-smoothed trend + individual datapoints. <span class="data-badge" id="dose-count"></span></div>
+      <div class="dose-controls">
+        <label>Dose metric:</label>
+        <button class="active" data-dose="Charge" data-action="dose-type" data-dose="Charge">Charge (µC)</button>
+        <button data-dose="Energy" data-action="dose-type" data-dose="Energy">Energy (µJ)</button>
+        <button data-dose="Power" data-action="dose-type" data-dose="Power">Power (W)</button>
+        <label style="margin-left:12px">Outcome:</label>
+        <button class="active" data-outcome-dose="all" data-action="dose-outcome" data-outcome-dose="all">All</button>
+        <button data-outcome-dose="Proliferation" data-action="dose-outcome" data-outcome-dose="Proliferation">Proliferation</button>
+        <button data-outcome-dose="Migration" data-action="dose-outcome" data-outcome-dose="Migration">Migration</button>
       </div>
-
-      <div id="scatter-legend" class="legend"></div>
-      <div class="chart-container">
-  <div id="scatter-chart"></div>
-</div>
-
+      <div class="note-box" id="dose-note"></div>
+      <div class="warn-box" id="dose-warn"></div>
+      <div id="dose-chart"></div>
     </div>
 
-    <div id="tab-dose" class="panel hidden"></div>
-
+    <div class="panel panel-hidden" id="tab-contribute">
+      <div class="chart-title">Contributing New Data</div>
+      <div class="chart-subtitle">This is an open dataset. Add studies via GitHub pull request.</div>
+      <div class="contrib-box">
+        <h3>How to add a new study</h3>
+        <p>All data lives in <code>data.json</code> at the root of the repository. Each entry is one experimental condition (one row from a paper). Add a new JSON object to the array following the schema below, then open a pull request.</p>
+        <p>Make sure <code>fold_change</code> is normalized to control (stimulated ÷ control). Include the DOI so records can be deduplicated and verified.</p>
+        <table class="schema-table">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td>stim_modality</td><td>string</td><td>"Mechanical" or "Electrical"</td></tr>
+          <tr><td>paper</td><td>string</td><td>Author(s), Year citation</td></tr>
+          <tr><td>doi</td><td>string</td><td>Full DOI URL (https://doi.org/…)</td></tr>
+          <tr><td>cell_type</td><td>string</td><td>"Fibroblast", "Keratinocyte", "Mixed"</td></tr>
+          <tr><td>model</td><td>string</td><td>"Human in vitro", "Mouse in vitro", "In vivo"</td></tr>
+          <tr><td>species</td><td>string</td><td>"Human", "Murine", etc.</td></tr>
+          <tr><td>stim_type</td><td>string</td><td>Free text description of stimulation method</td></tr>
+          <tr><td>outcome_type</td><td>string</td><td>"Proliferation", "Migration", "Morphology", "Viability"</td></tr>
+          <tr><td>outcome_raw</td><td>string</td><td>Exact outcome measurement label from paper</td></tr>
+          <tr><td>fold_change</td><td>number</td><td>Stimulated ÷ Control (normalized outcome)</td></tr>
+          <tr><td>frequency_hz</td><td>number|null</td><td>Stimulation frequency in Hz</td></tr>
+          <tr><td>pulse_duration_ms</td><td>number|null</td><td>Pulse duration in ms</td></tr>
+          <tr><td>stim_duration_hrs</td><td>number|null</td><td>Total stimulation duration in hours</td></tr>
+          <tr><td>strain_amplitude_pct</td><td>number|null</td><td>(Mechanical) Strain amplitude %</td></tr>
+          <tr><td>field_strength_mv_mm</td><td>number|null</td><td>(Electrical) Field strength in mV/mm</td></tr>
+          <tr><td>voltage_v</td><td>number|null</td><td>(Electrical) Voltage in V</td></tr>
+        </table>
+      </div>
+      <div class="contrib-box">
+        <h3>Load a local data.json</h3>
+        <p>Click the <strong>Load local data.json</strong> button at the top to merge in records from a file on your computer. Records are merged by DOI + outcome_raw to avoid duplicates.</p>
+      </div>
+      <div class="contrib-box">
+        <h3>GitHub Pages hosting</h3>
+        <p>Push <code>index.html</code> and <code>data.json</code> to a repo → <strong>Settings → Pages</strong> → source: main branch root. Live at <code>https://&lt;username&gt;.github.io/&lt;repo&gt;</code>. Merging new PRs to <code>data.json</code> updates the live site automatically.</p>
+      </div>
+    </div>
   </main>
-
 </div>
 
-<div id="tooltip" class="tooltip"></div>
+<div class="tooltip" id="tooltip" style="display:none"></div>
 
+<script src="./assets/js/app.js" defer></script>
 </body>
 </html>
