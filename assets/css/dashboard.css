@@ -142,7 +142,7 @@
 
   .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--dot-color, var(--accent)); }
   .legend-line { width: 18px; height: 2px; flex-shrink: 0; }
 
   .data-badge { display: inline-block; background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 2px 8px; font-size: 10px; color: var(--text-dim); margin-left: 8px; vertical-align: middle; }
@@ -190,3 +190,21 @@
   .source-toggle { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 3px 4px; flex-shrink: 0; }
   .source-btn { padding: 3px 10px; border-radius: 16px; border: none; font-family: var(--mono); font-size: 10px; cursor: pointer; color: var(--text-dim); background: transparent; transition: all 0.15s; letter-spacing: 0.04em; white-space: nowrap; }
   .source-btn.active { background: var(--accent); color: #fff; font-weight: 500; }
+
+  /* Citation bar label */
+  .cit-label { color: var(--text-dim); font-weight: 500; }
+
+  /* Dose outcome label spacing */
+  .dose-outcome-label { margin-left: 12px; font-size: 11px; color: var(--text-dim); }
+
+  /* Tooltip hidden via HTML hidden attribute instead of inline style */
+  .tooltip[hidden] { display: none; }
+
+  /* Stat pill semantic colour classes (set via className, not inline style) */
+  .stat-pill.total .val { color: var(--accent); }
+  .stat-pill.community .val { color: var(--up); }
+  .stat-pill.mixed-excl .val { color: var(--text-dimmer); font-size: 16px; }
+  .stat-pill.papers .val { color: var(--neutral); }
+
+  /* Legend hint item */
+  .legend-hint { margin-left: auto; color: var(--text-dimmer); font-size: 10px; }
