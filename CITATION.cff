@@ -1,0 +1,52 @@
+cff-version: 1.2.0
+message: "If you use this dataset or dashboard in your research, please cite the paper below."
+type: software
+title: "Skin Cell Stimulation Literature Review — Interactive Dataset & Dashboard"
+abstract: >
+  An open, interactive dataset and visualisation dashboard accompanying the systematic
+  data-driven review of in vitro electrical and mechanical stimulation of fibroblasts
+  and keratinocytes for post-inflammatory wound healing. Includes 563 experimental
+  conditions extracted from the literature, with fold-change outcomes normalised to
+  unstimulated controls. Community contributions via pull request are welcome.
+url: "https://data.smart-biomaterials.com"
+repository-code: "https://github.com/SMART-Biomaterials/stim-dashboard"
+license: CC-BY-4.0
+date-released: "2026-04-23"
+
+authors:
+  - family-names: Burgess
+    given-names: Matthew K.
+    affiliation: "Institute of Biomedical Engineering, University of Oxford"
+    orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"
+  - family-names: Marsh
+    given-names: Ellen F.
+    affiliation: "Institute of Biomedical Engineering, University of Oxford"
+    orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"
+  - family-names: Lucian
+    given-names: Veronica M.
+    affiliation: "Institute of Biomedical Engineering, University of Oxford"
+    orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"
+  - family-names: Nair
+    given-names: Malavika
+    affiliation: "Institute of Biomedical Engineering, University of Oxford"
+    orcid: "https://orcid.org/XXXX-XXXX-XXXX-XXXX"
+    email: "malavika.nair@eng.ox.ac.uk"
+
+preferred-citation:
+  type: article
+  title: >
+    A Data-Driven Review of in vitro Electrical and Mechanical Stimulation
+    for Post-Inflammatory Wound Healing
+  authors:
+    - family-names: Burgess
+      given-names: Matthew K.
+    - family-names: Marsh
+      given-names: Ellen F.
+    - family-names: Lucian
+      given-names: Veronica M.
+    - family-names: Nair
+      given-names: Malavika
+  year: 2026
+  journal: "TBD"
+  doi: "XXXXXX"
+  # Update journal and doi fields when paper is published
