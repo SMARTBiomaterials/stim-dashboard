@@ -149,14 +149,14 @@ function showTip(event, d) {
     tooltip.appendChild(row);
   });
 
-  tooltip.style.display = 'block';
+  tooltip.removeAttribute('hidden');
   moveTip(event);
 }
 function moveTip(e) {
   tooltip.style.left = Math.min(e.clientX + 14, window.innerWidth - 340) + 'px';
   tooltip.style.top  = Math.min(e.clientY - 10, window.innerHeight - 200) + 'px';
 }
-function hideTip() { tooltip.style.display = 'none'; }
+function hideTip() { tooltip.setAttribute('hidden', ''); }
 
 // ── CHIPS ─────────────────────────────────────────────────────────────────────
 function initFilters() {
@@ -223,13 +223,12 @@ function resetFilters() {
 }
 
 // ── STATS ─────────────────────────────────────────────────────────────────────
-function makePill(val, label, color) {
+function makePill(val, label, colorClass) {
   const div = document.createElement('div');
   div.className = 'stat-pill';
   const v = document.createElement('span');
   v.className = 'val';
   v.textContent = String(val);
-  if (color) v.style.color = color;
   const l = document.createElement('span');
   l.className = 'lbl';
   l.textContent = label;
@@ -251,17 +250,18 @@ function updateStats() {
   const total = makePill(f.length, 'Conditions'); total.classList.add('total');
   const mechP = makePill(mech, 'Mechanical');      mechP.classList.add('mech');
   const elecP = makePill(elecN, 'Electrical');     elecP.classList.add('elec');
-  const pap   = makePill(papers, 'Papers', 'var(--neutral)');
+  const pap   = makePill(papers, 'Papers');        pap.classList.add('papers');
   container.append(total, mechP, elecP, pap);
   if (commN > 0) {
-    const c = makePill(commN, 'Community', 'var(--up)');
+    const c = makePill(commN, 'Community');
+    c.classList.add('community');
     c.title = commN + ' community-contributed records';
     container.appendChild(c);
   }
   if (!includeMixed) {
-    const m = makePill(mixedN, 'Mixed excl.', 'var(--text-dimmer)');
+    const m = makePill(mixedN, 'Mixed excl.');
+    m.classList.add('mixed-excl');
     m.title = mixedN + ' mixed co-culture records excluded';
-    m.querySelector('.val').style.fontSize = '16px';
     container.appendChild(m);
   }
 }
@@ -379,14 +379,13 @@ function drawScatter() {
   legendEl.textContent = '';
   Object.entries(MODEL_COLOR).filter(([k]) => k !== 'Unknown').forEach(([k, c]) => {
     const item = document.createElement('div'); item.className = 'legend-item';
-    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.background = c;
+    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.setProperty('--dot-color', c);
     item.appendChild(dot);
     item.appendChild(document.createTextNode(k));
     legendEl.appendChild(item);
   });
   const hint = document.createElement('div');
-  hint.className = 'legend-item';
-  hint.style.cssText = 'margin-left:auto;color:var(--text-dimmer);font-size:10px';
+  hint.className = 'legend-item legend-hint';
   hint.textContent = 'click to open paper';
   legendEl.appendChild(hint);
 }
@@ -446,7 +445,7 @@ function drawFreq() {
   freqLeg.textContent = '';
   Object.entries(OUTCOME_COLOR).filter(([k]) => k !== 'Unknown').forEach(([k, c]) => {
     const item = document.createElement('div'); item.className = 'legend-item';
-    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.background = c;
+    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.setProperty('--dot-color', c);
     item.appendChild(dot);
     item.appendChild(document.createTextNode(k));
     freqLeg.appendChild(item);
@@ -478,7 +477,7 @@ function drawDuration() {
   durLeg.textContent = '';
   Object.entries(OUTCOME_COLOR).filter(([k]) => k !== 'Unknown').forEach(([k, c]) => {
     const item = document.createElement('div'); item.className = 'legend-item';
-    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.background = c;
+    const dot  = document.createElement('div'); dot.className = 'legend-dot'; dot.style.setProperty('--dot-color', c);
     item.appendChild(dot);
     item.appendChild(document.createTextNode(k));
     durLeg.appendChild(item);
