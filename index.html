@@ -36,33 +36,75 @@
   <button id="theme-btn" type="button">☀︎ Light</button>
 </header>
 
-<div class="controls">
-  <button class="source-btn active" data-source="all">All sources</button>
-  <button class="source-btn" data-source="Burgess2026">Paper only</button>
-  <div id="filter-modality"></div>
-<div id="filter-cell"></div>
-<div id="filter-outcome"></div>
-<div id="filter-model"></div>
+<div class="app">
 
-<input id="fc-min">
-<input id="fc-max">
-<input id="mixed-toggle">
+  <!-- ── SIDEBAR ───────────────────────── -->
+  <aside>
+
+    <div class="filter-section">
+      <div class="filter-label">Modality</div>
+      <div id="filter-modality" class="chip-group"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Cell Type</div>
+      <div id="filter-cell" class="chip-group"></div>
+
+      <label>
+        <input type="checkbox" id="mixed-toggle">
+        Include mixed
+      </label>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Outcome</div>
+      <div id="filter-outcome" class="chip-group"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Model</div>
+      <div id="filter-model" class="chip-group"></div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Fold Change</div>
+      <input type="range" id="fc-min" min="0" max="5" step="0.1">
+      <input type="range" id="fc-max" min="0" max="5" step="0.1">
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ──────────────────────────── -->
+  <main>
+
+    <div class="controls">
+      <button class="source-btn active" data-source="all">All</button>
+      <button class="source-btn" data-source="Burgess2026">Paper</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="scatter">Scatter</button>
+      <button class="tab" data-tab="dose">Dose</button>
+    </div>
+
+    <div id="tab-scatter" class="panel">
+      
+      <div class="legend-controls">
+        <button class="legend-btn active" data-color="modality">Modality</button>
+        <button class="legend-btn" data-color="outcome">Outcome</button>
+      </div>
+
+      <div id="scatter-legend" class="legend"></div>
+      <div id="scatter-chart"></div>
+
+    </div>
+
+    <div id="tab-dose" class="panel hidden"></div>
+
+  </main>
+
 </div>
 
-<main>
-  <div class="tabs">
-    <button class="tab active" data-tab="scatter">Scatter</button>
-    <button class="tab" data-tab="dose">Dose</button>
-  </div>
-
-  <div id="tab-scatter" class="panel"></div>
-  <div id="tab-dose" class="panel hidden"></div>
-</main>
-<div class="legend-controls">
-  <button class="legend-btn active" data-color="modality">Colour: Modality</button>
-  <button class="legend-btn" data-color="outcome">Colour: Outcome</button>
-</div>
-<div id="scatter-legend" class="legend"></div>
 <div id="tooltip" class="tooltip"></div>
 
 </body>
