@@ -13,7 +13,7 @@ let sourceFilter = 'all';
 
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  const tooltip = document.getElementById('tooltip');
+  tooltip = document.getElementById('tooltip');
   bindUI();
   initTheme();
   await loadData();
@@ -79,6 +79,8 @@ function render() {
 // ── STATS ─────────────────────────────────────
 function updateStats() {
   const el = document.getElementById('header-stats');
+  if (!el) return;
+
   const count = getFiltered().length;
   el.textContent = `${count} conditions`;
 }
@@ -86,7 +88,12 @@ function updateStats() {
 // ── TABS ──────────────────────────────────────
 function switchTab() {
   document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
-  document.getElementById(`tab-${currentTab}`).classList.remove('hidden');
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === currentTab);
+  });
+
+  document.getElementById(`tab-${currentTab}`)?.classList.remove('hidden');
 }
 
 // ── TOOLTIP (SAFE) ────────────────────────────
@@ -117,6 +124,7 @@ function moveTooltip(e) {
 }
 
 function hideTooltip() {
+  if (!tooltip) return;
   tooltip.style.display = 'none';
 }
 
