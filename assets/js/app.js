@@ -281,7 +281,7 @@ function hideTooltip() {
 
 // ── SCATTER ──────────────────────────────────
 function drawScatter() {
-  const el = document.getElementById('tab-scatter');
+  const el = document.getElementById('scatter-chart');
   el.replaceChildren();
 
   const data = getFiltered().filter(d =>
