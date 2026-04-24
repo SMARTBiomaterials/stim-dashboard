@@ -38,3 +38,23 @@ body {
 .legend-controls { display:flex; gap:8px; margin-bottom:6px; }
 .legend-btn { font-size:11px; padding:4px 10px; border:1px solid #444; border-radius:999px; background:transparent; cursor:pointer; }
 .legend-btn.active { border-color:#10b981; color:#10b981; }
+/* D3 axes styling */
+.axis text {
+  fill: var(--text-dim);
+  font-family: var(--mono, monospace);
+  font-size: 10px;
+}
+
+.axis path,
+.axis line {
+  stroke: var(--border);
+}
+
+.grid line {
+  stroke: var(--border);
+  stroke-dasharray: 2,4;
+}
+
+.grid path {
+  stroke: none;
+}
