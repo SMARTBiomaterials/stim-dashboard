@@ -39,6 +39,14 @@
 <div class="controls">
   <button class="source-btn active" data-source="all">All sources</button>
   <button class="source-btn" data-source="Burgess2026">Paper only</button>
+  <div id="filter-modality"></div>
+<div id="filter-cell"></div>
+<div id="filter-outcome"></div>
+<div id="filter-model"></div>
+
+<input id="fc-min">
+<input id="fc-max">
+<input id="mixed-toggle">
 </div>
 
 <main>
@@ -50,7 +58,11 @@
   <div id="tab-scatter" class="panel"></div>
   <div id="tab-dose" class="panel hidden"></div>
 </main>
-
+<div class="legend-controls">
+  <button class="legend-btn active" data-color="modality">Colour: Modality</button>
+  <button class="legend-btn" data-color="outcome">Colour: Outcome</button>
+</div>
+<div id="scatter-legend" class="legend"></div>
 <div id="tooltip" class="tooltip"></div>
 
 </body>
