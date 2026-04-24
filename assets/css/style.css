@@ -1,0 +1,612 @@
+/* Base body styles, font, and custom cursor */
+body {
+    background-color: #1f1f1f;
+    color: #f3f4f6;
+    font-family: 'Exo 2', sans-serif;
+}
+body {
+  background: linear-gradient(
+    135deg,
+    rgba(16,185,129,0.025) 0%,
+    rgba(59,130,246,0.025) 25%,
+    rgba(250,204,21,0.025) 50%,
+    rgba(239,68,68,0.025) 75%,
+    rgba(139,92,246,0.025) 100%
+  ), #1f1f1f;
+    background-attachment: fixed;
+  background-size: cover;
+}
+/* Glassmorphism effect for header */
+.header-glass {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+}
+/* Navigation link styling with hover and active states */
+.nav-link {
+    transition: all 0.3s ease;
+    position: relative;
+    font-weight: 500;
+}
+.nav-link.active, .nav-link:hover {
+    color: #10b981;
+    text-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+.nav-link.active::after, .nav-link:hover::after {
+    width: 100%;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #10b981;
+    transition: width 0.3s ease;
+}
+/* Hero section height */
+.hero-section {
+    height: 100vh;
+}
+/* Hero title animation */
+.hero-title {
+     text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8);
+     animation: breathe 5s ease-in-out infinite;
+}
+/* Section title underline */
+.section-title {
+    border-bottom: 3px solid #10b981;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+/* Card styling with hover effects */
+.card {
+    background-color: var(--card-bg, rgba(20, 20, 20, 0.7));
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15), 0 0 15px rgba(16, 185, 129, 0.1);
+}
+/* Particles.js canvas positioning */
+#particles-js {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+/* Page section display logic */
+.page-section {
+    display: none;
+    min-height: 100vh;
+}
+.page-section.active {
+    display: block;
+}
+/* Fade-in animation for section content */
+.fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in-section.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Modal overlay styles */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(5px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+/* Modal content styles */
+.modal-content {
+    background: #111827; padding: 2rem; border-radius: 0.5rem;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    width: 90%; max-width: 60rem; max-height: 90vh;
+    overflow-y: auto; position: relative;
+    transform: scale(0.95); transition: transform 0.3s ease;
+}
+.modal-overlay.active .modal-content { transform: scale(1); }
+/* Modal close button */
+.modal-close {
+    position: absolute; top: 1rem; right: 1rem;
+    cursor: pointer; font-size: 1.5rem; color: #9ca3af;
+    transition: color 0.3s ease;
+}
+.modal-close:hover { color: #f3f4f6; }
+/* Carousel specific styles */
+.carousel-container {
+    overflow: hidden;
+    position: relative;
+}
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+.carousel-slide {
+    min-width: 100%;
+    padding: 1rem;
+}
+/* Carousel dot indicators */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    gap: 0.5rem;
+}
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(16, 185, 129, 0.3);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.carousel-dot.active {
+    background-color: #10b981;
+    transform: scale(1.2);
+}
+/* 3D Hub Styles */
+#research-hub-container {
+    position: relative;
+}
+#research-canvas {
+    width: 100%;
+    height: 600px;
+    cursor: grab;
+}
+#research-canvas:active {
+    cursor: grabbing;
+}
+/* --- Interactive Research Hub: dynamic content images --- */
+#dynamic-content-panel img {
+  max-width: 50px;       /* cap width to something small */
+  max-height: 50px;      /* optional: keep them square-ish */
+  height: auto;           /* scale proportionally */
+  width: auto;
+  object-fit: contain;    /* no cropping */
+  display: block;
+  margin: 0.5rem auto;    /* center + some breathing room */
+}
+/* Keyframe animation for hero title */
+@keyframes breathe {
+    0%, 100% { text-shadow: 0 0 8px rgba(255, 255, 255, 0.3), 0 0 20px rgba(16, 185, 129, 0.8); }
+    50% { text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 30px rgba(16, 185, 129, 1); }
+}
+/* Loading spinner styles */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #10b981;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* Scroll to top button styles */
+#scroll-to-top-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s, opacity 0.3s;
+}
+#scroll-to-top-btn:hover {
+    background-color: #047857;
+}
+
+/* Collapsible Section Styles */
+.collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1rem;
+    background-color: rgba(20, 20, 20, 0.7); /* card-bg */
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-bottom: 1rem; /* Space between headers */
+}
+.collapsible-header:hover {
+    background-color: rgba(30, 30, 30, 0.8);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+.collapsible-header .section-title {
+    border-bottom: none; /* Remove underline from inner title */
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+.collapsible-header .chevron {
+    transition: transform 0.3s ease;
+}
+.collapsible-header.expanded .chevron {
+    transform: rotate(180deg);
+}
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out; /* Smooth transition for height */
+    padding: 0 1rem; /* Adjust padding as needed */
+    margin-top: -1rem; /* Overlap with header bottom margin */
+    margin-bottom: 1rem;
+}
+.collapsible-content.expanded {
+    max-height: 2000px; /* Large enough value to accommodate content */
+    padding: 1rem; /* Restore padding when expanded */
+    margin-top: 0;
+}
+.collapsible-content > *:first-child {
+    margin-top: 0;
+}
+/* --- 1) Latest News carousel images: fixed, consistent crop --- */
+.carousel-slide img,
+#news-carousel-track img {
+  width: 100%;
+  height: 220px;      /* adjust 200–260px to taste */
+  object-fit: cover;  /* crops edges, keeps center interesting */
+  display: block;
+  border-radius: 0.5rem;
+}
+
+/* Prevent slide content from stretching due to tall images */
+.carousel-slide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* --- Bonus: modal images shouldn’t explode in height --- */
+.modal-content img,
+#news-modal-image {
+  width: 100%;
+  max-height: 360px;   /* keep modal headers/footers visible */
+  object-fit: cover;
+  display: block;
+}
+
+/* --- 2) Compact “green date” chips (News + Outreach News) --- */
+/* General pill/date badge style */
+.date-badge {
+  display: inline-flex;       /* shrink to fit content */
+  align-items: center;        /* vertically center text */
+  justify-content: center;
+  height: auto !important;    /* cancel any h-full */
+  flex: 0 0 auto !important;  /* don't grow or stretch */
+  align-self: flex-start;     /* opt out of parent's align-items: stretch */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+/* Fallback if you can’t add classes: target time tags in lists/cards */
+#news-list time,
+#outreach-news-list time,
+.card time {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  max-width: max-content;
+}
+
+/* If a flex row is stretching the date chip vertically */
+.news-card,
+.outreach-card {
+  align-items: flex-start;   /* stop chips from getting tall inside flex */
+}
+/* Compact, non-stretching date chips everywhere */
+.date-badge,
+#news-list time,
+#outreach-news-list time,
+#news-modal-date .date-badge,
+#outreach-talk-modal-date .date-badge,
+#academic-presentation-modal-date .date-badge {
+  display: inline-block;        /* shrink to content */
+  width: auto !important;       /* defeat w-full */
+  min-width: 0 !important;      /* allow wrapping to shrink */
+  height: auto !important;      /* defeat h-full */
+  flex: 0 0 auto !important;    /* defeat flex-1 growth */
+  align-self: flex-start !important; /* defeat align-stretch */
+  white-space: normal;          /* allow wrapping at spaces */
+  overflow-wrap: anywhere;      /* break only at whitespace */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background-color: rgba(16,185,129,0.15);
+  color: #10b981;
+}
+
+/* If a parent row is still stretching items, stop it */
+.news-card,
+.outreach-card,
+#news-modal-content-text,
+#outreach-talk-modal-content-text,
+#academic-presentation-modal-content-text {
+  align-items: flex-start;      /* prevent vertical stretching in flex rows */
+}
+
+/* Belt-and-braces: if something added huge padding on the chip */
+.date-badge { padding: 0.25rem 0.5rem !important; }
+
+/* --- Carousel: desktop-specific sizing --- */
+@media (min-width: 1024px) {
+  /* Give each slide a sane width envelope so it doesn't sprawl */
+  #news-carousel-track .carousel-slide {
+    min-width: 720px;          /* enough space for image + copy */
+    max-width: 1040px;         /* don't stretch across huge screens */
+    padding-right: 1rem;
+    padding-left: 1rem;
+    align-items: flex-start;    /* stop vertical stretching */
+    gap: 1rem;
+  }
+
+  /* Image becomes a fixed column, scales to height, never stretches */
+  #news-carousel-track .carousel-slide img {
+    height: 240px;             /* desktop height */
+    width: auto !important;    /* beats any w-1/3 etc */
+    max-width: 280px;          /* column width cap */
+    flex: 0 0 280px;           /* fixed column */
+    object-fit: contain;       /* scale to height, no crop */
+    align-self: flex-start;    /* don't stretch to slide height */
+    margin: 0;
+    display: block;
+  }
+
+  /* Copy column can grow, wrap, and not push layout */
+  #news-carousel-track .carousel-slide > div {
+    flex: 1 1 0%;
+    min-width: 0;              /* allow text to wrap instead of forcing width */
+    text-align: left;          /* avoid center-aligned weirdness on desktop */
+  }
+}
+
+/* Safety: if any image still stretches because of utility classes */
+#news-carousel-track .carousel-slide img {
+  height: 220px;               /* mobile/tablet default */
+  width: auto !important;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+/* Team section images: consistent headshot sizing */
+.team img {
+  width: 120px;           /* same width for all */
+  height: 120px;          /* same height for all */
+  object-fit: cover;      /* crop to fill box, no distortion */
+  border-radius: 9999px;  /* perfect circle (if you want avatars) */
+  display: block;
+  margin: 0 auto 1rem;    /* center above name */
+}
+/* Carousel track: single row, no wrapping */
+#news-carousel-track {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  will-change: transform;
+}
+
+/* Each slide is a fixed column + flexible copy (matches your JS sizing) */
+#news-carousel-track .carousel-slide {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+/* Image column never stretches (works on desktop + “request desktop site”) */
+#news-carousel-track .carousel-slide .carousel-img {
+  height: 220px;          /* 240px on very large if you prefer */
+  width: auto !important;
+  max-width: 280px;
+  flex: 0 0 280px;        /* fixed image column */
+  object-fit: contain;    /* or 'cover' if you want cropping */
+  border-radius: 0.5rem;
+}
+
+/* Copy column gets the rest; long text won't force overflow */
+#news-carousel-track .carousel-slide .carousel-copy {
+  flex: 1 1 0%;
+  min-width: 0;           /* allows wrapping instead of pushing width */
+  text-align: left;
+}
+
+/* (Optional) clamp the whole carousel block so it doesn’t sprawl edge-to-edge */
+@media (min-width: 1280px) {
+  #news-carousel-track {
+    margin-inline: auto;
+    max-width: 1100px;
+  }
+  #news-carousel-track .carousel-slide .carousel-img {
+    height: 240px;
+  }
+}
+/* News list: keep the date pill compact on all breakpoints */
+#news-list .card {
+  align-items: flex-start !important;  /* opt out of equal-height rows */
+}
+
+#news-list .card > .bg-primary {
+  display: inline-flex !important;     /* size to content */
+  align-items: center;
+  justify-content: center;
+  width: auto !important;              /* defeat any w-full */
+  min-width: 0 !important;
+  height: auto !important;             /* defeat h-full */
+  min-height: 0 !important;
+  flex: 0 0 auto !important;           /* defeat flex-1 growth */
+  align-self: flex-start !important;   /* opt out of row stretching */
+  padding: 0.25rem 0.5rem !important;  /* compact padding */
+  border-radius: 0.5rem !important;
+  line-height: 1.2 !important;
+  white-space: normal;                 /* allow wrap if long */
+  overflow-wrap: anywhere;             /* wrap at spaces */
+  margin-right: 0.5rem;                 /* right padding after pill */
+
+}
+/* Outreach news: make pill compact + add gap */
+#outreach-news-list .card {
+  align-items: flex-start !important;   /* stop equal-height stretching */
+}
+
+#outreach-news-list .card > .bg-primary {
+  display: inline-flex !important;      /* shrink to text size */
+  align-items: center;
+  justify-content: center;
+  width: auto !important;               /* cancel w-full / w-24 */
+  height: auto !important;              /* cancel h-full */
+  flex: 0 0 auto !important;            /* don’t flex-grow */
+  align-self: flex-start !important;    /* opt out of stretch */
+  padding: 0.25rem 0.5rem !important;   /* compact pill look */
+  border-radius: 0.5rem !important;
+  line-height: 1.2 !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-right: 0.5rem;                 /* right padding after pill */
+}
+/* Center the image column inside each slide */
+#news-carousel-track .carousel-slide {
+  align-items: center;        /* centers image + copy vertically */
+}
+
+/* Make sure the image itself centers inside its fixed column */
+#news-carousel-track .carousel-slide .carousel-img {
+  display: block;
+  margin: 0 auto;             /* center horizontally inside its column */
+  align-self: center;         /* belt-and-braces vertical center */
+}
+/* Research cards: identical image crop (16:9-ish, adjust height to taste) */
+.research-card-img {
+  width: 100%;
+  height: 200px;          /* set the common height for all cards */
+  object-fit: cover;      /* crop to fill without distortion */
+  display: block;
+}
+/* Ensure avatar boxes are identical everywhere */
+.team img, .alumni img,
+.modal-content img.rounded-full {
+  width: 48rem;           /* 48 (Tailwind) for modal, but CSS ensures consistency */
+  height: 48rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+/* Avatars in cards ONLY (not buttons) */
+.card img.rounded-full {
+  width: 30rem;      /* w-32 */
+  height: 30rem;     /* h-32 */
+  object-fit: cover;
+  aspect-ratio: 1;
+  display: block;
+}
+
+/* Avatar in the person modal */
+.modal-content img.rounded-full {
+  width: 48rem;     /* w-48 */
+  height: 48rem;    /* h-48 */
+  object-fit: cover;
+  aspect-ratio: 1;
+  display: block;
+}
+/* Research cards: identical image crop (16:9-ish, adjust height to taste) */
+.research-card-img {
+  width: 100%;
+  height: 220px;          /* set the common height for all cards */
+  object-fit: cover;      /* crop to fill without distortion */
+  display: block;
+}
+.open-research-modal-btn,
+.open-outreach-talk-modal-btn,
+.open-academic-presentation-modal-btn {
+  display: inline-flex;
+  align-items: center;
+}
+/* On small screens, make sure slides can't overflow the viewport */
+@media (max-width: 639px) {
+  #news-carousel-track .carousel-slide {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+}
+/* 1) Let the Outreach page (and any page-section) grow + scroll on mobile */
+@media (max-width: 640px) {
+  .page-section {
+    min-height: 100vh;          /* grow with content */
+    height: auto !important;    /* defeat fixed 100vh if present */
+    overflow: auto !important;  /* allow scrolling */
+  }
+  #outreach-page {
+    overflow: visible !important;
+  }
+}
+
+/* Modern mobile viewports (iOS/Chrome address bar quirks) */
+@supports (min-height: 100svh) {
+  @media (max-width: 640px) {
+    .page-section { min-height: 100svh; }
+  }
+}
+
+/* 2) Collapsible content: remove the height cap when expanded */
+.collapsible-content {
+  overflow: hidden;             /* collapsed state */
+}
+.collapsible-content.expanded {
+  max-height: none !important;  /* no cap when open */
+  overflow: visible !important; /* let children render fully */
+}
+
+/* 3) Ensure cards/containers don’t clip expanded content */
+#academic-presentations-grid,
+#outreach-page .card,
+#outreach-page .grid {
+  overflow: visible !important;
+}
+/* Remove background + blur for research hub + carousel sections */
+#home-research-hub-section,
+#home-page .bg-dark-bg\/80 {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+#app-canvas { display:block; width:100%; height:100%; }
+#app-canvas-container { width:100%; height:100vh; }
