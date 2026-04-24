@@ -15,21 +15,69 @@
     --border: #242837;
     --border2: #2e3448;
     --text: #e8eaf0;
-    --text-dim: #7a8099;
-    --text-dimmer: #404660;
-    --mech: #4fc3a1;
-    --mech-dim: rgba(79,195,161,0.18);
+    --text-dim: #9aa0b8;
+    --text-dimmer: #555e7a;
+    --mech: #3db896;
+    --mech-dim: rgba(61,184,150,0.15);
     --elec: #f5845a;
-    --elec-dim: rgba(245,132,90,0.18);
+    --elec-dim: rgba(245,132,90,0.15);
     --accent: #c9a96e;
     --accent-dim: rgba(201,169,110,0.12);
-    --up: #5dd97a;
+    --up: #4cc96a;
     --down: #e05d7a;
-    --neutral: #6b7db3;
+    --neutral: #7b8fc4;
+    --shadow: rgba(0,0,0,0.5);
     --radius: 6px;
     --mono: 'DM Mono', monospace;
     --serif: 'Fraunces', serif;
   }
+
+  [data-theme="light"] {
+    --bg: #f5f6f9;
+    --surface: #ffffff;
+    --surface2: #eef0f5;
+    --border: #dde0ea;
+    --border2: #c8ccd9;
+    --text: #1a1d28;
+    --text-dim: #4a5068;
+    --text-dimmer: #8890a8;
+    --mech: #1a9e7a;
+    --mech-dim: rgba(26,158,122,0.12);
+    --elec: #d95f30;
+    --elec-dim: rgba(217,95,48,0.1);
+    --accent: #9a7340;
+    --accent-dim: rgba(154,115,64,0.1);
+    --up: #1a8c3a;
+    --down: #c0284a;
+    --neutral: #4a5a9a;
+    --shadow: rgba(0,0,0,0.12);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f6f9;
+      --surface: #ffffff;
+      --surface2: #eef0f5;
+      --border: #dde0ea;
+      --border2: #c8ccd9;
+      --text: #1a1d28;
+      --text-dim: #4a5068;
+      --text-dimmer: #8890a8;
+      --mech: #1a9e7a;
+      --mech-dim: rgba(26,158,122,0.12);
+      --elec: #d95f30;
+      --elec-dim: rgba(217,95,48,0.1);
+      --accent: #9a7340;
+      --accent-dim: rgba(154,115,64,0.1);
+      --up: #1a8c3a;
+      --down: #c0284a;
+      --neutral: #4a5a9a;
+      --shadow: rgba(0,0,0,0.12);
+    }
+  }
+
+  .theme-btn { background: transparent; border: 1px solid var(--border2); color: var(--text-dim); padding: 4px 10px; border-radius: var(--radius); cursor: pointer; font-family: var(--mono); font-size: 11px; transition: all 0.15s; flex-shrink: 0; }
+  .theme-btn:hover { border-color: var(--text-dim); color: var(--text); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; overflow-x: hidden; }
 
@@ -86,7 +134,7 @@
   .chart-subtitle { font-size: 11px; color: var(--text-dim); margin-bottom: 20px; letter-spacing: 0.04em; }
   svg { display: block; width: 100%; }
 
-  .tooltip { position: fixed; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 11px; pointer-events: none; z-index: 1000; max-width: 320px; line-height: 1.6; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+  .tooltip { position: fixed; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 11px; pointer-events: none; z-index: 1000; max-width: 320px; line-height: 1.6; box-shadow: 0 8px 32px var(--shadow); }
   .tooltip .tt-title { font-weight: 500; color: var(--text); margin-bottom: 4px; font-size: 12px; }
   .tooltip .tt-doi { color: var(--accent); font-size: 10px; margin-bottom: 6px; word-break: break-all; }
   .tooltip .tt-row { display: flex; justify-content: space-between; gap: 12px; color: var(--text-dim); }
@@ -124,10 +172,10 @@
   .schema-table td:first-child { color: var(--mech); }
   .schema-table tr:last-child td { border-bottom: none; }
 
-  .note-box { background: rgba(107,125,179,0.08); border: 1px solid rgba(107,125,179,0.25); border-radius: var(--radius); padding: 10px 14px; font-size: 11px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
+  .note-box { background: rgba(107,125,179,0.07); border: 1px solid rgba(107,125,179,0.2); border-radius: var(--radius); padding: 10px 14px; font-size: 11px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
   .note-box strong { color: var(--neutral); }
 
-  .warn-box { background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.3); border-radius: var(--radius); padding: 9px 14px; font-size: 11px; color: var(--accent); margin-bottom: 14px; line-height: 1.6; display: none; }
+  .warn-box { background: var(--accent-dim); border: 1px solid rgba(154,115,64,0.3); border-radius: var(--radius); padding: 9px 14px; font-size: 11px; color: var(--accent); margin-bottom: 14px; line-height: 1.6; display: none; }
   .warn-box.visible { display: block; }
 
   .mixed-toggle-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
@@ -152,6 +200,7 @@
     <p>Mechanical &amp; Electrical · Fibroblasts &amp; Keratinocytes</p>
   </div>
   <div class="header-stats" id="header-stats"></div>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">☀︎ Light</button>
 </header>
 
 <div class="citation-bar">
@@ -319,8 +368,8 @@ let DOSE_DATA = [];
 async function loadData() {
   try {
     const [mainResp, doseResp] = await Promise.all([
-      fetch('data.json'),
-      fetch('dose_data.json')
+      fetch('./data.json'),
+      fetch('./dose_data.json')
     ]);
     if (!mainResp.ok) throw new Error('Failed to load data.json');
     if (!doseResp.ok) throw new Error('Failed to load dose_data.json');
@@ -346,7 +395,32 @@ let includeMixed = false;
 let sourceFilter = 'all';
 let filters = { modality: new Set(), cell: new Set(), outcome: new Set(), model: new Set(), fcMin: 0, fcMax: 8 };
 
-// ── COLOURS ───────────────────────────────────────────────────────────────────
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function initTheme() {
+  // Respect system preference on first load; user toggle overrides
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = stored || (prefersDark ? 'dark' : 'light');
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀︎ Light' : '☾ Dark';
+  localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+  redraw(); // D3 reads CSS vars at draw time so needs a redraw
+}
+
+// Helper to read current CSS variable value (for D3 which needs explicit colours)
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 const MODALITY_COLOR  = { 'Mechanical': '#4fc3a1', 'Electrical': '#f5845a' };
 const OUTCOME_COLOR   = { 'Proliferation': '#7eb8e8', 'Migration': '#c87dd4', 'Morphology': '#e8c97e', 'Viability': '#7ee8a2', 'Unknown': '#555' };
 const MODEL_COLOR     = { 'Human in vitro': '#60a5fa', 'Mouse in vitro': '#f97316', 'In vivo': '#a78bfa', 'Unknown': '#444' };
@@ -521,12 +595,31 @@ function svgSetup(el, W, H, M) {
 }
 
 function addGridAndAxes(g, xScale, yScale, w, h, xLabel, yLabel, xTicks, yTicks) {
-  g.append('g').attr('class','grid').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(yTicks||6));
-  g.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale).ticks(xTicks||6));
-  g.append('g').attr('class','axis').call(d3.axisLeft(yScale).ticks(yTicks||6));
-  g.append('line').attr('x1',0).attr('x2',w).attr('y1',yScale(1)).attr('y2',yScale(1)).attr('stroke','rgba(255,255,255,0.1)').attr('stroke-dasharray','4,4');
-  if (xLabel) g.append('text').attr('x',w/2).attr('y',h+38).attr('text-anchor','middle').attr('fill','var(--text-dim)').attr('font-size',11).attr('font-family','var(--mono)').text(xLabel);
-  if (yLabel) g.append('text').attr('transform','rotate(-90)').attr('x',-h/2).attr('y',-48).attr('text-anchor','middle').attr('fill','var(--text-dim)').attr('font-size',11).attr('font-family','var(--mono)').text(yLabel);
+  const gridColor   = cssVar('--border');
+  const axisColor   = cssVar('--border2');
+  const textColor   = cssVar('--text-dim');
+  const refColor    = cssVar('--border2');
+
+  g.append('g').attr('class','grid').call(d3.axisLeft(yScale).tickSize(-w).tickFormat('').ticks(yTicks||6))
+    .selectAll('line').attr('stroke', gridColor).attr('stroke-dasharray','2,4');
+  g.select('.grid path').attr('stroke','none');
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${h})`).call(d3.axisBottom(xScale).ticks(xTicks||6))
+    .selectAll('text').attr('fill', textColor).attr('font-family','var(--mono)').attr('font-size',10);
+  g.select('.axis:last-of-type path').attr('stroke', axisColor);
+  g.selectAll('.axis:last-of-type line').attr('stroke', axisColor);
+  g.append('g').attr('class','axis').call(d3.axisLeft(yScale).ticks(yTicks||6))
+    .selectAll('text').attr('fill', textColor).attr('font-family','var(--mono)').attr('font-size',10);
+  // Re-style all axis paths/lines
+  g.selectAll('.axis path, .axis line').attr('stroke', axisColor);
+  g.selectAll('.axis text').attr('fill', textColor).attr('font-family','var(--mono)').attr('font-size','10px');
+  // FC=1 reference line
+  if (yScale(1) !== undefined) {
+    g.append('line').attr('class','ref-line')
+      .attr('x1',0).attr('x2',w).attr('y1',yScale(1)).attr('y2',yScale(1))
+      .attr('stroke', refColor).attr('stroke-width',1).attr('stroke-dasharray','4,4');
+  }
+  if (xLabel) g.append('text').attr('x',w/2).attr('y',h+38).attr('text-anchor','middle').attr('fill',textColor).attr('font-size',11).attr('font-family','var(--mono)').text(xLabel);
+  if (yLabel) g.append('text').attr('transform','rotate(-90)').attr('x',-h/2).attr('y',-48).attr('text-anchor','middle').attr('fill',textColor).attr('font-size',11).attr('font-family','var(--mono)').text(yLabel);
 }
 
 function dotLayer(g, data, cx, cy, color, tip) {
@@ -617,7 +710,7 @@ function drawBox() {
     g.append('line').attr('x1',bx-bw/2).attr('x2',bx+bw/2).attr('y1',yS(med)).attr('y2',yS(med)).attr('stroke',color).attr('stroke-width',2.5);
     g.selectAll(null).data(vals).enter().append('circle')
       .attr('cx', () => bx+(Math.random()-0.5)*xS.bandwidth()*0.35).attr('cy', v => yS(v)).attr('r',2.5).attr('fill',color).attr('fill-opacity',0.4);
-    g.append('text').attr('x',bx).attr('y',yS(hi)-6).attr('text-anchor','middle').attr('fill','var(--text-dimmer)').attr('font-size',9).attr('font-family','var(--mono)').text(`n=${vals.length}`);
+    g.append('text').attr('x',bx).attr('y',yS(hi)-6).attr('text-anchor','middle').attr('fill',cssVar('--text-dimmer')).attr('font-size',9).attr('font-family','var(--mono)').text(`n=${vals.length}`);
   });
 }
 
@@ -794,7 +887,7 @@ function drawDose() {
     g.append('line').attr('x1',legX).attr('x2',legX+18).attr('y1',legY+i*18+5).attr('y2',legY+i*18+5)
       .attr('stroke',c).attr('stroke-width',i===0?1.5:2.2).attr('stroke-dasharray',dash);
     g.append('text').attr('x',legX+24).attr('y',legY+i*18+9)
-      .attr('fill','var(--text-dim)').attr('font-size',10).attr('font-family','var(--mono)').text(label);
+      .attr('fill', cssVar('--text-dim')).attr('font-size',10).attr('font-family','var(--mono)').text(label);
   });
 }
 
@@ -821,7 +914,7 @@ document.getElementById('file-input').addEventListener('change', function(e) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async () => {
-  // Show loading state
+  initTheme();
   document.getElementById('header-stats').innerHTML = '<div style="color:var(--text-dim);font-size:12px">Loading data…</div>';
   await loadData();
   allData = [...MAIN_DATA];
