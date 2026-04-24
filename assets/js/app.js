@@ -1,3 +1,18 @@
+function cssVar(name) {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+}
+function addAxes(svg, x, y, W, H) {
+  svg.append('g')
+    .attr('transform', `translate(0,${H - 40})`)
+    .call(d3.axisBottom(x).ticks(6));
+
+  svg.append('g')
+    .attr('transform', `translate(60,0)`)
+    .call(d3.axisLeft(y).ticks(6));
+}
+
 // === NUMERIC HELPERS ===
 function localMedian(data, xKey, yKey, bins = 10) {
   if (data.length < 4) return [];
@@ -249,13 +264,55 @@ function updateStats() {
 function showTooltip(e, d) {
   clear(tooltip);
 
-  const t = document.createElement('div');
-  t.textContent = d.paper || '';
+  // container
+  const wrap = document.createElement('div');
 
-  const r = document.createElement('div');
-  r.textContent = `Fold change: ${d.fold_change ?? '—'}`;
+  // title
+  const title = document.createElement('div');
+  title.className = 'tt-title';
+  title.textContent = (d.paper || 'Unknown study').slice(0, 100);
 
-  tooltip.append(t, r);
+  // DOI
+  const doi = document.createElement('div');
+  doi.className = 'tt-doi';
+  doi.textContent = d.doi || '';
+
+  wrap.append(title, doi);
+
+  // rows helper
+  function addRow(label, value) {
+    if (value === undefined || value === null || value === '') return;
+
+    const row = document.createElement('div');
+    row.className = 'tt-row';
+
+    const left = document.createElement('span');
+    left.textContent = label;
+
+    const right = document.createElement('span');
+    right.textContent = value;
+
+    row.append(left, right);
+    wrap.appendChild(row);
+  }
+
+  // === FULL DATA (matches original) ===
+  addRow('Modality', d.stim_modality);
+  addRow('Cell type', d.cell_type);
+  addRow('Outcome', d.outcome_type);
+  addRow('Fold change', d.fold_change?.toFixed(3));
+  addRow('Model', d.model);
+
+  addRow('Stim type', typeof d.stim_type === 'string' ? d.stim_type.slice(0,40) : null);
+  addRow('Frequency', d.frequency_hz ? `${d.frequency_hz} Hz` : null);
+  addRow('Duration', d.stim_duration_hrs ? `${d.stim_duration_hrs} hrs` : null);
+  addRow('Strain', d.strain_amplitude_pct ? `${d.strain_amplitude_pct} %` : null);
+  addRow('Field', d.field_strength_mv_mm ? `${d.field_strength_mv_mm} mV/mm` : null);
+
+  addRow('Dose', d.dose_value ? d.dose_value.toExponential(2) : null);
+
+  tooltip.appendChild(wrap);
+
   tooltip.style.display = 'block';
   moveTooltip(e);
 }
@@ -324,14 +381,31 @@ function drawScatter() {
   const svg = d3.select(el).append('svg')
     .attr('viewBox', `0 0 ${W} ${H}`);
 
-  const x = d3.scaleLog()
-    .domain(d3.extent(data, d => d.stim_duration_hrs))
-    .range([60, W - 20]);
+  const xExt = d3.extent(data, d => d.stim_duration_hrs);
+
+const x = d3.scaleLog()
+  .domain([
+  Math.max(0.001, xExt[0] * 0.8),
+  xExt[1] * 1.2
+])
+  .range([60, W - 20]);
 
   const y = d3.scaleLinear()
     .domain(d3.extent(data, d => d.fold_change))
     .range([H - 40, 20]);
+  addAxes(svg, x, y, W, H);
+  svg.selectAll('.domain, .tick line')
+  .attr('stroke', cssVar('--border2'));
 
+svg.selectAll('.tick text')
+  .attr('fill', cssVar('--text-dim'));
+  svg.append('line')
+  .attr('x1', 60)
+  .attr('x2', W - 20)
+  .attr('y1', y(1))
+  .attr('y2', y(1))
+  .attr('stroke', cssVar('--border2'))
+  .attr('stroke-dasharray', '4,4');
   // points
   svg.selectAll('circle')
     .data(data)
@@ -342,9 +416,24 @@ function drawScatter() {
     .attr('r', 4.5)
     .attr('fill', d => getColor(d))
     .attr('opacity', 0.7)
-    .on('mouseover', showTooltip)
-    .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip);
+    .attr('stroke', d => getColor(d))
+    .attr('stroke-width', 0.5)
+    .style('cursor', 'pointer')
+.on('mouseover', function(e,d){
+  d3.select(this)
+    .attr('r', 7)
+    .attr('stroke-width', 1.2);
+
+  showTooltip(e,d);
+})
+.on('mousemove', moveTooltip)
+.on('mouseout', function(){
+  d3.select(this)
+    .attr('r', 4.5)
+    .attr('stroke-width', 0.5);
+
+  hideTooltip();
+});
 
   // rolling median trend
   const trend = localMedian(data, 'stim_duration_hrs', 'fold_change', 10);
@@ -353,7 +442,7 @@ function drawScatter() {
     svg.append('path')
       .datum(trend)
       .attr('fill', 'none')
-      .attr('stroke', '#7c9ef5')
+      .attr('stroke', cssVar('--accent'))
       .attr('stroke-width', 2)
       .attr('d', d3.line()
         .x(d => x(d.x))
@@ -399,7 +488,12 @@ function drawBox() {
   const y = d3.scaleLinear()
     .domain(d3.extent(data, d => d.fold_change))
     .range([H - 40, 20]);
+  addAxes(svg, x, y, W, H);
+  svg.selectAll('.domain, .tick line')
+  .attr('stroke', cssVar('--border2'));
 
+svg.selectAll('.tick text')
+  .attr('fill', cssVar('--text-dim'));
   keys.forEach(k => {
     const vals = groups.get(k).map(d => d.fold_change).sort(d3.ascending);
     if (vals.length < 2) return;
@@ -415,7 +509,7 @@ function drawBox() {
       .attr('y', y(q3))
       .attr('width', 20)
       .attr('height', y(q1) - y(q3))
-      .attr('fill', '#888')
+      .attr('fill', cssVar('--text-dim'))
       .attr('opacity', 0.3);
 
     svg.append('line')
@@ -452,18 +546,41 @@ function drawFreq() {
   const y = d3.scaleLinear()
     .domain(d3.extent(data, d => d.fold_change))
     .range([H - 40, 20]);
+addAxes(svg, x, y, W, H);
+  svg.selectAll('.domain, .tick line')
+  .attr('stroke', cssVar('--border2'));
 
-  svg.selectAll('circle')
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('cx', d => x(d.frequency_hz))
-    .attr('cy', d => y(d.fold_change))
-    .attr('r', 4.5)
-    .attr('fill', d => OUTCOME_COLOR[d.outcome_type] || '#888')
-    .on('mouseover', showTooltip)
-    .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip);
+svg.selectAll('.tick text')
+  .attr('fill', cssVar('--text-dim'));
+ svg.selectAll('circle')
+  .data(data)
+  .enter()
+  .append('circle')
+  .attr('cx', d => x(d.frequency_hz))
+  .attr('cy', d => y(d.fold_change))
+  .attr('r', 4.5)
+  .attr('fill', d => getColor(d))
+  .attr('opacity', 0.7)
+  .attr('stroke', d => getColor(d))
+  .attr('stroke-width', 0.5)
+  .style('cursor', 'pointer')
+
+  // ✅ HOVER SCALE HERE
+  .on('mouseover', function (e, d) {
+    d3.select(this)
+      .attr('r', 7)
+      .attr('stroke-width', 1.2);
+
+    showTooltip(e, d);
+  })
+  .on('mousemove', moveTooltip)
+  .on('mouseout', function () {
+    d3.select(this)
+      .attr('r', 4.5)
+      .attr('stroke-width', 0.5);
+
+    hideTooltip();
+  });
 
   renderLegend(data);
 }
@@ -495,7 +612,12 @@ function drawDuration() {
     .range([H - 40, 20]);
 
   const grouped = d3.group(data, d => d.outcome_type);
+addAxes(svg, x, y, W, H);
+  svg.selectAll('.domain, .tick line')
+  .attr('stroke', cssVar('--border2'));
 
+svg.selectAll('.tick text')
+  .attr('fill', cssVar('--text-dim'));
   grouped.forEach((pts, key) => {
     svg.selectAll(null)
       .data(pts)
@@ -510,6 +632,7 @@ function drawDuration() {
   renderLegend(data);
 }
 function drawDose() {
+  
   const el = document.getElementById('dose-chart');
   clear(el);
 
@@ -550,10 +673,15 @@ function drawDose() {
   const densScale = d3.scaleLinear()
     .domain([0, d3.max(density, d => d[1])])
     .range([0, H * 0.25]);
+addAxes(svg, x, y, W, H);
+  svg.selectAll('.domain, .tick line')
+  .attr('stroke', cssVar('--border2'));
 
+svg.selectAll('.tick text')
+  .attr('fill', cssVar('--text-dim'));
   svg.append('path')
     .datum(density)
-    .attr('fill', '#f5845a')
+    .attr('fill', cssVar('--elec'))
     .attr('opacity', 0.08)
     .attr('d', d3.area()
       .x(d => x(Math.pow(10, d[0])))
@@ -564,17 +692,34 @@ function drawDose() {
 
   // === points ===
   svg.selectAll('circle')
-    .data(data)
-    .enter()
-    .append('circle')
-    .attr('cx', d => x(d.dose_value))
-    .attr('cy', d => y(d.fold_change))
-    .attr('r', 5)
-    .attr('fill', '#f5845a')
-    .attr('opacity', 0.7)
-    .on('mouseover', showTooltip)
-    .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip);
+  .data(data)
+  .enter()
+  .append('circle')
+  .attr('cx', d => x(d.dose_value))
+  .attr('cy', d => y(d.fold_change))
+  .attr('r', 4.5)
+  .attr('fill', d => getColor(d))
+  .attr('opacity', 0.7)
+  .attr('stroke', d => getColor(d))
+  .attr('stroke-width', 0.5)
+  .style('cursor', 'pointer')
+
+  // ✅ HOVER SCALE HERE
+  .on('mouseover', function (e, d) {
+    d3.select(this)
+      .attr('r', 7)
+      .attr('stroke-width', 1.2);
+
+    showTooltip(e, d);
+  })
+  .on('mousemove', moveTooltip)
+  .on('mouseout', function () {
+    d3.select(this)
+      .attr('r', 4.5)
+      .attr('stroke-width', 0.5);
+
+    hideTooltip();
+  });
 
   // === trend ===
   if (data.length > 10) {
@@ -583,7 +728,7 @@ function drawDose() {
     svg.append('path')
       .datum(trend)
       .attr('fill', 'none')
-      .attr('stroke', '#ffffff')
+      .attr('stroke', cssVar('--text'))
       .attr('stroke-width', 2)
       .attr('d', d3.line()
         .x(d => x(d.x))
