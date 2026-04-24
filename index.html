@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none'; frame-ancestors 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none';">
+<!-- frame-ancestors must be set as an HTTP response header, not a meta tag.
+     Add to _headers file in repo root for GitHub Pages:
+     /*
+       Content-Security-Policy: frame-ancestors 'none'
+     -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skin Cell Stimulation — Literature Review Dashboard</title>
 <script src="./assets/js/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous" defer></script>
@@ -22,7 +27,7 @@
 
 <div class="citation-bar">
   <span>
-    <strong style="color:var(--text-dim)">Dataset:</strong>
+    <strong class="cit-label">Dataset:</strong>
     Burgess, Marsh, Lucian &amp; Nair (2026) — <em>A Data-Driven Review of in vitro Electrical and Mechanical Stimulation for Post-Inflammatory Wound Healing</em>.
     University of Oxford · Institute of Biomedical Engineering.
     <a href="https://doi.org/XXXXXX" id="paper-doi-link" target="_blank" title="Link will update when paper DOI is assigned">DOI: pending</a>
@@ -123,7 +128,7 @@
         <button class="active" data-dose="Charge" data-action="dose-type" data-dose="Charge">Charge (µC)</button>
         <button data-dose="Energy" data-action="dose-type" data-dose="Energy">Energy (µJ)</button>
         <button data-dose="Power" data-action="dose-type" data-dose="Power">Power (W)</button>
-        <label style="margin-left:12px">Outcome:</label>
+        <label class="dose-outcome-label">Outcome:</label>
         <button class="active" data-outcome-dose="all" data-action="dose-outcome" data-outcome-dose="all">All</button>
         <button data-outcome-dose="Proliferation" data-action="dose-outcome" data-outcome-dose="Proliferation">Proliferation</button>
         <button data-outcome-dose="Migration" data-action="dose-outcome" data-outcome-dose="Migration">Migration</button>
@@ -172,7 +177,7 @@
   </main>
 </div>
 
-<div class="tooltip" id="tooltip" style="display:none"></div>
+<div class="tooltip" id="tooltip" hidden></div>
 
 <script src="./assets/js/app.js" defer></script>
 </body>
