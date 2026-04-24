@@ -125,38 +125,119 @@ function drawScatter() {
   const el = document.getElementById('tab-scatter');
   el.replaceChildren();
 
-  const data = getFiltered().filter(d => d.fold_change != null);
+  // Filter: need duration + fold_change
+  const data = getFiltered().filter(d =>
+    d.stim_duration_hrs != null &&
+    d.stim_duration_hrs > 0 &&
+    d.fold_change != null
+  );
 
   if (!data.length) {
-    el.textContent = 'No data';
+    el.textContent = 'No data for current filters';
     return;
   }
 
-  const W = 800, H = 400;
+  const W = el.clientWidth || 800;
+  const H = 420;
+  const M = { t: 20, r: 20, b: 50, l: 60 };
+  const w = W - M.l - M.r;
+  const h = H - M.t - M.b;
 
   const svg = d3.select(el)
     .append('svg')
     .attr('viewBox', `0 0 ${W} ${H}`);
 
-  const x = d3.scaleLinear()
-    .domain(d3.extent(data, d => d.fold_change))
-    .range([40, W - 20]);
+  const g = svg.append('g')
+    .attr('transform', `translate(${M.l},${M.t})`);
+
+  // ── SCALES ───────────────────────────────
+  const xExtent = d3.extent(data, d => d.stim_duration_hrs);
+  const yExtent = d3.extent(data, d => d.fold_change);
+
+  const x = d3.scaleLog()
+    .domain([
+      Math.max(0.001, xExtent[0] * 0.8),
+      xExtent[1] * 1.2
+    ])
+    .range([0, w])
+    .clamp(true);
 
   const y = d3.scaleLinear()
-    .domain([0, data.length])
-    .range([20, H - 20]);
+    .domain([
+      Math.min(0, yExtent[0] - 0.1),
+      yExtent[1] + 0.2
+    ])
+    .range([h, 0])
+    .nice();
 
-  svg.selectAll('circle')
+  // ── GRID ────────────────────────────────
+  g.append('g')
+    .attr('class', 'grid')
+    .call(d3.axisLeft(y).tickSize(-w).tickFormat('').ticks(6))
+    .selectAll('line')
+    .attr('stroke', '#333')
+    .attr('stroke-dasharray', '2,4');
+
+  // ── AXES ────────────────────────────────
+  g.append('g')
+    .attr('transform', `translate(0,${h})`)
+    .call(d3.axisBottom(x).ticks(6, "~g"));
+
+  g.append('g')
+    .call(d3.axisLeft(y).ticks(6));
+
+  // ── AXIS LABELS ─────────────────────────
+  g.append('text')
+    .attr('x', w / 2)
+    .attr('y', h + 40)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', 11)
+    .text('Stimulation Duration (hours, log)');
+
+  g.append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('x', -h / 2)
+    .attr('y', -45)
+    .attr('text-anchor', 'middle')
+    .attr('font-size', 11)
+    .text('Fold Change');
+
+  // ── FC = 1 REFERENCE LINE ───────────────
+  g.append('line')
+    .attr('x1', 0)
+    .attr('x2', w)
+    .attr('y1', y(1))
+    .attr('y2', y(1))
+    .attr('stroke', '#666')
+    .attr('stroke-dasharray', '4,4');
+
+  // ── COLOR BY MODALITY ───────────────────
+  const COLOR = {
+    Mechanical: '#4fc3a1',
+    Electrical: '#f5845a'
+  };
+
+  // ── POINTS ──────────────────────────────
+  g.selectAll('circle')
     .data(data)
     .enter()
     .append('circle')
-    .attr('cx', d => x(d.fold_change))
-    .attr('cy', (_, i) => y(i))
-    .attr('r', 4)
-    .attr('fill', '#7c9ef5')
+    .attr('cx', d => x(Math.max(0.001, d.stim_duration_hrs)))
+    .attr('cy', d => y(d.fold_change))
+    .attr('r', 4.5)
+    .attr('fill', d => COLOR[d.stim_modality] || '#999')
+    .attr('fill-opacity', 0.65)
+    .attr('stroke', d => COLOR[d.stim_modality] || '#999')
+    .attr('stroke-width', 0.5)
+    .style('cursor', 'pointer')
     .on('mouseover', showTooltip)
     .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip);
+    .on('mouseout', hideTooltip)
+    .on('click', (_, d) => {
+      if (d.doi && isSafeUrl(d.doi)) {
+        window.open(d.doi, '_blank', 'noopener');
+      }
+    });
 }
 
 function drawDose() {
