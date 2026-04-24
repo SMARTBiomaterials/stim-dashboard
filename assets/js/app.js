@@ -1,4 +1,31 @@
-// ── SAFE URL ─────────────────────────────────
+// === NUMERIC HELPERS ===
+function localMedian(data, xKey, yKey, bins = 10) {
+  if (data.length < 4) return [];
+  const sorted = [...data].sort((a,b) => a[xKey] - b[xKey]);
+  const size = Math.max(3, Math.floor(sorted.length / bins));
+  const out = [];
+
+  for (let i = 0; i <= sorted.length - size; i += Math.floor(size/2)) {
+    const slice = sorted.slice(i, i + size);
+    out.push({
+      x: d3.mean(slice, d => d[xKey]),
+      y: d3.median(slice, d => d[yKey])
+    });
+  }
+  return out;
+}
+
+function kernelDensityEstimator(kernel, X) {
+  return function(V) {
+    return X.map(x => [x, d3.mean(V, v => kernel(x - v))]);
+  };
+}
+
+function kernelEpanechnikov(k) {
+  return v => Math.abs(v /= k) <= 1 ? 0.75 * (1 - v*v) / k : 0;
+}
+
+// === SAFE HELPERS ===
 function isSafeUrl(url) {
   try {
     const u = new URL(url, window.location.origin);
@@ -8,11 +35,16 @@ function isSafeUrl(url) {
   }
 }
 
-// ── STATE ────────────────────────────────────
+function clear(el) {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
+// === STATE ===
 let DATA = [];
 let currentTab = 'scatter';
 let sourceFilter = 'all';
 let includeMixed = false;
+let colorMode = 'modality';
 
 let filters = {
   modality: new Set(),
@@ -25,7 +57,7 @@ let filters = {
 
 let tooltip = null;
 
-// ── COLOR MAPS (ADD HERE) ───────────────
+// === COLORS ===
 const MODALITY_COLOR = {
   Mechanical: '#4fc3a1',
   Electrical: '#f5845a'
@@ -38,64 +70,33 @@ const OUTCOME_COLOR = {
   Viability: '#7ee8a2'
 };
 
-// helper to pick colour
 function getColor(d) {
-  if (colorMode === 'outcome') {
-    return OUTCOME_COLOR[d.outcome_type] || '#999';
-  }
-  return MODALITY_COLOR[d.stim_modality] || '#999';
+  return colorMode === 'outcome'
+    ? OUTCOME_COLOR[d.outcome_type] || '#999'
+    : MODALITY_COLOR[d.stim_modality] || '#999';
 }
 
-// ── LEGEND RENDERER (ADD HERE) ──────────
-function renderLegend(data) {
-  const el = document.getElementById('scatter-legend');
-  if (!el) return;
-
-  el.replaceChildren();
-
-  const map = colorMode === 'outcome' ? OUTCOME_COLOR : MODALITY_COLOR;
-
-  const keys = Object.keys(map).filter(k =>
-    data.some(d =>
-      colorMode === 'outcome'
-        ? d.outcome_type === k
-        : d.stim_modality === k
-    )
-  );
-
-  keys.forEach(k => {
-    const item = document.createElement('div');
-    item.className = 'legend-item';
-
-    const dot = document.createElement('div');
-    dot.className = 'legend-dot';
-    dot.style.background = map[k];
-
-    const label = document.createElement('span');
-    label.textContent = k;
-
-    item.append(dot, label);
-    el.appendChild(item);
-  });
-}
-
-// ── INIT ─────────────────────────────────────
+// === INIT ===
 document.addEventListener('DOMContentLoaded', async () => {
   tooltip = document.getElementById('tooltip');
-
   bindUI();
-  initTheme();
   await loadData();
   initFilters();
   render();
 });
-let colorMode = 'modality'; // 'modality' | 'outcome'
 
-// ── UI BINDINGS ──────────────────────────────
+// === DATA ===
+async function loadData() {
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    DATA = await res.json();
+  } catch {
+    document.getElementById('scatter-chart').textContent = 'Failed to load data';
+  }
+}
+
+// === UI BINDINGS ===
 function bindUI() {
-  document.getElementById('theme-btn')
-    ?.addEventListener('click', toggleTheme);
-
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
       currentTab = btn.dataset.tab;
@@ -107,16 +108,12 @@ function bindUI() {
   document.querySelectorAll('.source-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       sourceFilter = btn.dataset.source;
-
-      document.querySelectorAll('.source-btn')
-        .forEach(b => b.classList.remove('active'));
-
+      document.querySelectorAll('.source-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       render();
     });
   });
 
-  // sliders
   document.getElementById('fc-min')?.addEventListener('input', e => {
     filters.fcMin = +e.target.value;
     render();
@@ -127,13 +124,12 @@ function bindUI() {
     render();
   });
 
-  // mixed toggle
-  document.getElementById('mixed-toggle')
-    ?.addEventListener('change', e => {
-      includeMixed = e.target.checked;
-      render();
-    });
-document.querySelectorAll('.legend-btn').forEach(btn => {
+  document.getElementById('mixed-toggle')?.addEventListener('change', e => {
+    includeMixed = e.target.checked;
+    render();
+  });
+
+  document.querySelectorAll('.legend-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       colorMode = btn.dataset.color;
       document.querySelectorAll('.legend-btn').forEach(b => b.classList.remove('active'));
@@ -143,62 +139,7 @@ document.querySelectorAll('.legend-btn').forEach(btn => {
   });
 }
 
-// ── DATA ─────────────────────────────────────
-async function loadData() {
-  try {
-    const res = await fetch('./data.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error(res.status);
-
-    const json = await res.json();
-    DATA = Array.isArray(json) ? json : (json.items || []);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('tab-scatter').textContent = 'Failed to load data';
-  }
-}
-
-// ── FILTER SETUP ─────────────────────────────
-function initFilters() {
-  const uniq = key =>
-    [...new Set(DATA.map(d => d[key]))].filter(Boolean);
-
-  buildChips('filter-modality', uniq('stim_modality'), 'modality');
-  buildChips('filter-cell', uniq('cell_type'), 'cell');
-  buildChips('filter-outcome', uniq('outcome_type'), 'outcome');
-  buildChips('filter-model', uniq('model'), 'model');
-}
-
-function buildChips(id, values, key) {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  el.replaceChildren();
-
-  values.forEach(v => {
-    const btn = document.createElement('button');
-    btn.className = 'chip';
-    btn.textContent = v;
-
-    btn.addEventListener('click', () => {
-      const set = filters[key];
-
-      if (set.has(v)) {
-        set.delete(v);
-        btn.classList.remove('active');
-      } else {
-        set.add(v);
-        btn.classList.add('active');
-      }
-
-      render();
-    });
-
-    el.appendChild(btn);
-  });
-}
-
-// ── FILTER LOGIC ─────────────────────────────
+// === FILTERS ===
 function getFiltered() {
   return DATA.filter(d => {
     if (!includeMixed && d.cell_type === 'Mixed') return false;
@@ -215,203 +156,416 @@ function getFiltered() {
   });
 }
 
-// ── RENDER ROOT ──────────────────────────────
-function render() {
-  updateStats();
+function initFilters() {
+  const uniq = key => [...new Set(DATA.map(d => d[key]))].filter(Boolean);
 
-  if (currentTab === 'scatter') drawScatter();
-  if (currentTab === 'dose') drawDose();
+  buildChips('filter-modality', uniq('stim_modality'), 'modality');
+  buildChips('filter-cell', uniq('cell_type'), 'cell');
+  buildChips('filter-outcome', uniq('outcome_type'), 'outcome');
+  buildChips('filter-model', uniq('model'), 'model');
 }
 
-// ── STATS ────────────────────────────────────
+function buildChips(id, values, key) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  clear(el);
+
+  values.forEach(v => {
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.textContent = v;
+
+    btn.addEventListener('click', () => {
+      const set = filters[key];
+      if (set.has(v)) {
+        set.delete(v);
+        btn.classList.remove('active');
+      } else {
+        set.add(v);
+        btn.classList.add('active');
+      }
+      render();
+    });
+
+    el.appendChild(btn);
+  });
+}
+
+// === STATS ===
 function updateStats() {
   const el = document.getElementById('header-stats');
   if (!el) return;
 
+  clear(el);
+
   const f = getFiltered();
 
-  const mech = f.filter(d => d.stim_modality === 'Mechanical').length;
-  const elec = f.filter(d => d.stim_modality === 'Electrical').length;
+  const total = document.createElement('div');
+  total.textContent = `${f.length} conditions`;
 
-  el.textContent = `${f.length} conditions (${mech} mech / ${elec} elec)`;
+  const mech = document.createElement('div');
+  mech.style.color = 'var(--mech)';
+  mech.textContent = `${f.filter(d => d.stim_modality === 'Mechanical').length} mech`;
+
+  const elec = document.createElement('div');
+  elec.style.color = 'var(--elec)';
+  elec.textContent = `${f.filter(d => d.stim_modality === 'Electrical').length} elec`;
+
+  el.append(total, mech, elec);
 }
 
-// ── TABS ─────────────────────────────────────
-function switchTab() {
-  document.querySelectorAll('.panel')
-    .forEach(p => p.classList.add('hidden'));
-
-  document.querySelectorAll('.tab')
-    .forEach(t => t.classList.toggle('active', t.dataset.tab === currentTab));
-
-  document.getElementById(`tab-${currentTab}`)
-    ?.classList.remove('hidden');
-}
-
-// ── TOOLTIP ──────────────────────────────────
+// === TOOLTIP ===
 function showTooltip(e, d) {
-  if (!tooltip) return;
-
-  tooltip.replaceChildren();
+  clear(tooltip);
 
   const t = document.createElement('div');
-  t.textContent = d.paper || 'Unknown';
+  t.textContent = d.paper || '';
 
-  const r1 = document.createElement('div');
-  r1.textContent = `Fold change: ${d.fold_change ?? '—'}`;
+  const r = document.createElement('div');
+  r.textContent = `Fold change: ${d.fold_change ?? '—'}`;
 
-  const r2 = document.createElement('div');
-  r2.textContent = `Duration: ${d.stim_duration_hrs ?? '—'} h`;
-
-  tooltip.append(t, r1, r2);
+  tooltip.append(t, r);
   tooltip.style.display = 'block';
   moveTooltip(e);
 }
 
 function moveTooltip(e) {
-  if (!tooltip) return;
   tooltip.style.left = e.clientX + 10 + 'px';
   tooltip.style.top = e.clientY + 10 + 'px';
 }
 
 function hideTooltip() {
-  if (!tooltip) return;
   tooltip.style.display = 'none';
 }
 
-// ── SCATTER ──────────────────────────────────
+// === TABS ===
+function switchTab() {
+  document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  document.getElementById(`tab-${currentTab}`)?.classList.remove('hidden');
+  document.querySelector(`[data-tab="${currentTab}"]`)?.classList.add('active');
+}
+
+// === LEGEND ===
+function renderLegend(data) {
+  const el = document.getElementById('scatter-legend');
+  if (!el) return;
+  clear(el);
+
+  const map = colorMode === 'outcome' ? OUTCOME_COLOR : MODALITY_COLOR;
+
+  Object.keys(map).forEach(k => {
+    if (!data.some(d => d.stim_modality === k || d.outcome_type === k)) return;
+
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+
+    const dot = document.createElement('div');
+    dot.className = 'legend-dot';
+    dot.style.background = map[k];
+
+    const label = document.createElement('span');
+    label.textContent = k;
+
+    item.append(dot, label);
+    el.appendChild(item);
+  });
+}
+
+// === SCATTER ===
 function drawScatter() {
   const el = document.getElementById('scatter-chart');
-  el.replaceChildren();
+  clear(el);
 
   const data = getFiltered().filter(d =>
-    d.stim_duration_hrs != null &&
-    d.stim_duration_hrs > 0 &&
-    d.fold_change != null
+    d.stim_duration_hrs && d.fold_change
   );
 
   if (!data.length) {
-    el.textContent = 'No data for current filters';
+    el.textContent = 'No data';
+    return;
+  }
+
+  const W = el.clientWidth || 800;
+  const H = 420;
+
+  const svg = d3.select(el).append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const x = d3.scaleLog()
+    .domain(d3.extent(data, d => d.stim_duration_hrs))
+    .range([60, W - 20]);
+
+  const y = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([H - 40, 20]);
+
+  // points
+  svg.selectAll('circle')
+    .data(data)
+    .enter()
+    .append('circle')
+    .attr('cx', d => x(d.stim_duration_hrs))
+    .attr('cy', d => y(d.fold_change))
+    .attr('r', 4.5)
+    .attr('fill', d => getColor(d))
+    .attr('opacity', 0.7)
+    .on('mouseover', showTooltip)
+    .on('mousemove', moveTooltip)
+    .on('mouseout', hideTooltip);
+
+  // rolling median trend
+  const trend = localMedian(data, 'stim_duration_hrs', 'fold_change', 10);
+
+  if (trend.length > 2) {
+    svg.append('path')
+      .datum(trend)
+      .attr('fill', 'none')
+      .attr('stroke', '#7c9ef5')
+      .attr('stroke-width', 2)
+      .attr('d', d3.line()
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+        .curve(d3.curveCatmullRom.alpha(0.5))
+      );
+  }
+
+  renderLegend(data);
+}
+
+// === ROOT RENDER ===
+function render() {
+  updateStats();
+
+  if (currentTab === 'scatter') drawScatter();
+  if (currentTab === 'box') drawBox();
+  if (currentTab === 'freq') drawFreq();
+  if (currentTab === 'duration') drawDuration();
+  if (currentTab === 'dose') drawDose();
+}
+
+function drawBox() {
+  const el = document.getElementById('box-chart');
+  clear(el);
+
+  const data = getFiltered().filter(d => d.fold_change != null);
+  if (!data.length) {
+    el.textContent = 'No data';
+    return;
+  }
+
+  const groups = d3.group(data, d => `${d.stim_modality} · ${d.outcome_type}`);
+  const keys = [...groups.keys()];
+
+  const W = el.clientWidth || 800;
+  const H = 420;
+
+  const svg = d3.select(el).append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const x = d3.scaleBand().domain(keys).range([60, W - 20]).padding(0.3);
+  const y = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([H - 40, 20]);
+
+  keys.forEach(k => {
+    const vals = groups.get(k).map(d => d.fold_change).sort(d3.ascending);
+    if (vals.length < 2) return;
+
+    const q1 = d3.quantile(vals, 0.25);
+    const q3 = d3.quantile(vals, 0.75);
+    const med = d3.quantile(vals, 0.5);
+
+    const cx = x(k) + x.bandwidth() / 2;
+
+    svg.append('rect')
+      .attr('x', cx - 10)
+      .attr('y', y(q3))
+      .attr('width', 20)
+      .attr('height', y(q1) - y(q3))
+      .attr('fill', '#888')
+      .attr('opacity', 0.3);
+
+    svg.append('line')
+      .attr('x1', cx - 10)
+      .attr('x2', cx + 10)
+      .attr('y1', y(med))
+      .attr('y2', y(med))
+      .attr('stroke', '#fff');
+  });
+}
+function drawFreq() {
+  const el = document.getElementById('freq-chart');
+  clear(el);
+
+  const data = getFiltered().filter(d =>
+    d.frequency_hz && d.fold_change
+  );
+
+  if (!data.length) {
+    el.textContent = 'No frequency data';
+    return;
+  }
+
+  const W = el.clientWidth || 800;
+  const H = 420;
+
+  const svg = d3.select(el).append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const x = d3.scaleLog()
+    .domain(d3.extent(data, d => d.frequency_hz))
+    .range([60, W - 20]);
+
+  const y = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([H - 40, 20]);
+
+  svg.selectAll('circle')
+    .data(data)
+    .enter()
+    .append('circle')
+    .attr('cx', d => x(d.frequency_hz))
+    .attr('cy', d => y(d.fold_change))
+    .attr('r', 4.5)
+    .attr('fill', d => OUTCOME_COLOR[d.outcome_type] || '#888')
+    .on('mouseover', showTooltip)
+    .on('mousemove', moveTooltip)
+    .on('mouseout', hideTooltip);
+
+  renderLegend(data);
+}
+function drawDuration() {
+  const el = document.getElementById('dur-chart');
+  clear(el);
+
+  const data = getFiltered().filter(d =>
+    d.stim_duration_hrs && d.fold_change
+  );
+
+  if (!data.length) {
+    el.textContent = 'No duration data';
+    return;
+  }
+
+  const W = el.clientWidth || 800;
+  const H = 420;
+
+  const svg = d3.select(el).append('svg')
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const x = d3.scaleLog()
+    .domain(d3.extent(data, d => d.stim_duration_hrs))
+    .range([60, W - 20]);
+
+  const y = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([H - 40, 20]);
+
+  const grouped = d3.group(data, d => d.outcome_type);
+
+  grouped.forEach((pts, key) => {
+    svg.selectAll(null)
+      .data(pts)
+      .enter()
+      .append('circle')
+      .attr('cx', d => x(d.stim_duration_hrs))
+      .attr('cy', d => y(d.fold_change))
+      .attr('r', 4.5)
+      .attr('fill', OUTCOME_COLOR[key] || '#888');
+  });
+
+  renderLegend(data);
+}
+function drawDose() {
+  const el = document.getElementById('dose-chart');
+  clear(el);
+
+  const data = getFiltered().filter(d =>
+    d.dose_value && d.fold_change
+  );
+
+  if (!data.length) {
+    el.textContent = 'No dose data';
     return;
   }
 
   const W = el.clientWidth || 800;
   const H = 440;
-  const M = { t: 24, r: 24, b: 56, l: 64 };
-  const w = W - M.l - M.r;
-  const h = H - M.t - M.b;
 
-  const svg = d3.select(el)
-    .append('svg')
+  const svg = d3.select(el).append('svg')
     .attr('viewBox', `0 0 ${W} ${H}`);
 
-  const g = svg.append('g')
-    .attr('transform', `translate(${M.l},${M.t})`);
-
-  // ── scales
-  const xExt = d3.extent(data, d => d.stim_duration_hrs);
-  const yExt = d3.extent(data, d => d.fold_change);
-
   const x = d3.scaleLog()
-    .domain([Math.max(1e-3, xExt[0] * 0.8), xExt[1] * 1.2])
-    .range([0, w])
-    .clamp(true);
+    .domain(d3.extent(data, d => d.dose_value))
+    .range([60, W - 120]);
 
   const y = d3.scaleLinear()
-    .domain([Math.min(0, yExt[0] - 0.1), yExt[1] + 0.2])
-    .range([h, 0])
-    .nice();
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([H - 40, 20]);
 
-  // ── grid
-  g.append('g')
-    .call(d3.axisLeft(y).tickSize(-w).tickFormat('').ticks(6))
-    .selectAll('line')
-    .attr('stroke', '#2a2a2a')
-    .attr('stroke-dasharray', '2,4');
+  // === KDE ===
+  const logVals = data.map(d => Math.log10(d.dose_value));
+  const range = d3.extent(logVals);
 
-  // ── axes
-  g.append('g')
-    .attr('transform', `translate(0,${h})`)
-    .call(d3.axisBottom(x).ticks(6, "~g"));
+  const kde = kernelDensityEstimator(
+    kernelEpanechnikov(0.4),
+    d3.range(range[0], range[1], (range[1]-range[0])/100)
+  );
 
-  g.append('g')
-    .call(d3.axisLeft(y).ticks(6));
+  const density = kde(logVals);
 
-  // ── labels
-  g.append('text')
-    .attr('x', w / 2)
-    .attr('y', h + 42)
-    .attr('text-anchor', 'middle')
-    .attr('font-size', 11)
-    .text('Stimulation Duration (hours, log)');
+  const densScale = d3.scaleLinear()
+    .domain([0, d3.max(density, d => d[1])])
+    .range([0, H * 0.25]);
 
-  g.append('text')
-    .attr('transform', 'rotate(-90)')
-    .attr('x', -h / 2)
-    .attr('y', -48)
-    .attr('text-anchor', 'middle')
-    .attr('font-size', 11)
-    .text('Fold Change');
+  svg.append('path')
+    .datum(density)
+    .attr('fill', '#f5845a')
+    .attr('opacity', 0.08)
+    .attr('d', d3.area()
+      .x(d => x(Math.pow(10, d[0])))
+      .y0(H - 40)
+      .y1(d => (H - 40) - densScale(d[1]))
+      .curve(d3.curveBasis)
+    );
 
-  // ── FC = 1 line
-  g.append('line')
-    .attr('x1', 0)
-    .attr('x2', w)
-    .attr('y1', y(1))
-    .attr('y2', y(1))
-    .attr('stroke', '#666')
-    .attr('stroke-dasharray', '4,4');
-
-  // ── jitter to reduce overlap
-  const jitter = () => (Math.random() - 0.5) * 6;
-
-  // ── points
-  g.selectAll('circle')
+  // === points ===
+  svg.selectAll('circle')
     .data(data)
     .enter()
     .append('circle')
-    .attr('cx', d => x(Math.max(1e-3, d.stim_duration_hrs)) + jitter())
-    .attr('cy', d => y(d.fold_change) + jitter() * 0.2)
-    .attr('r', 4.5)
-    .attr('fill', d => getColor(d))
-    .attr('fill-opacity', 0.7)
-    .attr('stroke', d => getColor(d))
-    .attr('stroke-width', 0.6)
-    .style('cursor', 'pointer')
+    .attr('cx', d => x(d.dose_value))
+    .attr('cy', d => y(d.fold_change))
+    .attr('r', 5)
+    .attr('fill', '#f5845a')
+    .attr('opacity', 0.7)
     .on('mouseover', showTooltip)
     .on('mousemove', moveTooltip)
-    .on('mouseout', hideTooltip)
-    .on('click', (_, d) => {
-      if (d.doi && isSafeUrl(d.doi)) {
-        window.open(d.doi, '_blank', 'noopener');
-      }
-    });
+    .on('mouseout', hideTooltip);
 
-  // ── counts badge (optional)
-  const countEl = document.getElementById('scatter-count');
-  if (countEl) countEl.textContent = `${data.length} points`;
+  // === trend ===
+  if (data.length > 10) {
+    const trend = localMedian(data, 'dose_value', 'fold_change', 12);
 
-  // ── legend
-  renderLegend(data);
-}
+    svg.append('path')
+      .datum(trend)
+      .attr('fill', 'none')
+      .attr('stroke', '#ffffff')
+      .attr('stroke-width', 2)
+      .attr('d', d3.line()
+        .x(d => x(d.x))
+        .y(d => y(d.y))
+        .curve(d3.curveCatmullRom.alpha(0.5))
+      );
+  }
 
-// ── DOSE (stub) ──────────────────────────────
-function drawDose() {
-  document.getElementById('tab-dose').textContent = 'Dose view';
-}
-
-// ── THEME ────────────────────────────────────
-function initTheme() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  applyTheme(saved);
-}
-
-function toggleTheme() {
-  const current = document.documentElement.dataset.theme || 'dark';
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-}
-
-function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  localStorage.setItem('theme', theme);
+  // === warning ===
+  if (data.length < 15) {
+    const warn = document.createElement('div');
+    warn.className = 'warn-box visible';
+    warn.textContent = `Small sample size (n=${data.length}) — interpret cautiously.`;
+    el.appendChild(warn);
+  }
 }
