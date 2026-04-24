@@ -15,6 +15,13 @@
   --radius: 6px;
   --mono: monospace;
 }
+[data-theme="light"] {
+  --bg: #f4f6fb;
+  --text: #111827;
+  --text-dim: #374558;
+  --border: rgba(99,120,180,0.2);
+  --border2: rgba(99,120,180,0.4);
+}
 
 body {
   background-color: var(--bg);
