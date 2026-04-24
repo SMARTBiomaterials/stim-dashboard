@@ -38,7 +38,33 @@ function isSafeUrl(url) {
 function clear(el) {
   while (el.firstChild) el.removeChild(el.firstChild);
 }
+// === THEME SYSTEM (CSP SAFE) ===
+function initTheme() {
+  const stored = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+  const theme = stored || (prefersDark ? 'dark' : 'light');
+  applyTheme(theme);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+
+  const btn = document.getElementById('theme-btn');
+  if (btn) {
+    btn.textContent = theme === 'dark' ? '☀︎ Light' : '☾ Dark';
+  }
+
+  localStorage.setItem('theme', theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+
+  // important: redraw charts so CSS vars update
+  render();
+}
 // === STATE ===
 let DATA = [];
 let currentTab = 'scatter';
@@ -79,6 +105,9 @@ function getColor(d) {
 // === INIT ===
 document.addEventListener('DOMContentLoaded', async () => {
   tooltip = document.getElementById('tooltip');
+
+  initTheme();   // ← ADD THIS
+
   bindUI();
   await loadData();
   initFilters();
@@ -97,6 +126,8 @@ async function loadData() {
 
 // === UI BINDINGS ===
 function bindUI() {
+  document.getElementById('theme-btn')
+  ?.addEventListener('click', toggleTheme);
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => {
       currentTab = btn.dataset.tab;
