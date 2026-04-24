@@ -1,6 +1,6 @@
 # Skin Cell Stimulation — Interactive Literature Review Dashboard
 
-**[→ data.smart-biomaterials.com](https://data.smart-biomaterials.com)**
+**[→ data.smart-biomaterials.com/stim-dashboard](https://data.smart-biomaterials.com/stim-dashboard)**
 
 An open, interactive dataset and visualisation dashboard for the systematic data-driven review of in vitro electrical and mechanical stimulation of fibroblasts and keratinocytes. Built from 563 experimental conditions extracted from the peer-reviewed literature, with fold-change outcomes normalised to unstimulated controls.
 
