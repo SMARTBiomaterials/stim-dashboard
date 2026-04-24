@@ -1,3 +1,11 @@
+function isSafeUrl(url) {
+  try {
+    const u = new URL(url, window.location.origin);
+    return ['http:', 'https:'].includes(u.protocol);
+  } catch {
+    return false;
+  }
+}
 // ── STATE ─────────────────────────────────────
 let DATA = [];
 let currentTab = 'scatter';
@@ -5,6 +13,7 @@ let sourceFilter = 'all';
 
 // ── INIT ──────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  const tooltip = document.getElementById('tooltip');
   bindUI();
   initTheme();
   await loadData();
@@ -36,8 +45,19 @@ function bindUI() {
 
 // ── DATA ──────────────────────────────────────
 async function loadData() {
-  const res = await fetch('./data.json');
-  DATA = await res.json();
+  try {
+    const res = await fetch('./data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+
+    const json = await res.json();
+    DATA = Array.isArray(json) ? json : (json.items || []);
+
+  } catch (err) {
+    console.error('Data load failed:', err);
+
+    const el = document.getElementById('tab-scatter');
+    if (el) el.textContent = 'Failed to load data.json';
+  }
 }
 
 // ── FILTER ────────────────────────────────────
@@ -70,22 +90,30 @@ function switchTab() {
 }
 
 // ── TOOLTIP (SAFE) ────────────────────────────
-const tooltip = document.getElementById('tooltip');
+let tooltip = null;
+
 
 function showTooltip(e, d) {
+  if (!tooltip) return;
+
   tooltip.replaceChildren();
 
   const title = document.createElement('div');
-  title.textContent = d.paper || '';
-  tooltip.appendChild(title);
+  title.textContent = d.paper || 'Unknown';
+
+  const fc = document.createElement('div');
+  fc.textContent = `Fold change: ${d.fold_change ?? '—'}`;
+
+  tooltip.append(title, fc);
 
   tooltip.style.display = 'block';
   moveTooltip(e);
 }
 
 function moveTooltip(e) {
-  tooltip.style.left = e.clientX + 'px';
-  tooltip.style.top = e.clientY + 'px';
+  if (!tooltip) return;
+  tooltip.style.left = e.clientX + 10 + 'px';
+  tooltip.style.top = e.clientY + 10 + 'px';
 }
 
 function hideTooltip() {
@@ -97,20 +125,37 @@ function drawScatter() {
   const el = document.getElementById('tab-scatter');
   el.replaceChildren();
 
-  const data = getFiltered();
+  const data = getFiltered().filter(d => d.fold_change != null);
+
+  if (!data.length) {
+    el.textContent = 'No data';
+    return;
+  }
+
+  const W = 800, H = 400;
 
   const svg = d3.select(el)
     .append('svg')
-    .attr('viewBox', '0 0 800 400');
+    .attr('viewBox', `0 0 ${W} ${H}`);
+
+  const x = d3.scaleLinear()
+    .domain(d3.extent(data, d => d.fold_change))
+    .range([40, W - 20]);
+
+  const y = d3.scaleLinear()
+    .domain([0, data.length])
+    .range([20, H - 20]);
 
   svg.selectAll('circle')
     .data(data)
     .enter()
     .append('circle')
-    .attr('cx', (d,i) => i * 5)
-    .attr('cy', 200)
-    .attr('r', 3)
+    .attr('cx', d => x(d.fold_change))
+    .attr('cy', (_, i) => y(i))
+    .attr('r', 4)
+    .attr('fill', '#7c9ef5')
     .on('mouseover', showTooltip)
+    .on('mousemove', moveTooltip)
     .on('mouseout', hideTooltip);
 }
 
