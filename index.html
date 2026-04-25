@@ -3,11 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'none';">
-<!-- frame-ancestors must be set as an HTTP response header, not a meta tag.
-     Add to _headers file in repo root for GitHub Pages:
-     /*
-       Content-Security-Policy: frame-ancestors 'none'
-     -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Skin Cell Stimulation — Literature Review Dashboard</title>
 <script src="./assets/js/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous" defer></script>
@@ -32,7 +27,7 @@
     University of Oxford · Institute of Biomedical Engineering.
     <a href="https://doi.org/XXXXXX" id="paper-doi-link" target="_blank" title="Link will update when paper DOI is assigned">DOI: pending</a>
     &nbsp;·&nbsp;
-    <a href="https://smart-biomaterials.com" target="_blank">SMART-Biomaterials Lab</a>
+    <a href="https://smart-biomaterials.com" target="_blank">SMART Biomaterials</a>
   </span>
   <div class="source-toggle" title="Filter by data source">
     <button class="source-btn active" data-source="all" data-action="source" data-source="all">All sources</button>
@@ -170,9 +165,17 @@
         <p>Click the <strong>Load local data.json</strong> button at the top to merge in records from a file on your computer. Records are merged by DOI + outcome_raw to avoid duplicates.</p>
       </div>
       <div class="contrib-box">
-        <h3>GitHub Pages hosting</h3>
-        <p>Push <code>index.html</code> and <code>data.json</code> to a repo → <strong>Settings → Pages</strong> → source: main branch root. Live at <code>https://&lt;username&gt;.github.io/&lt;repo&gt;</code>. Merging new PRs to <code>data.json</code> updates the live site automatically.</p>
+        <h3>Accessing the repository &amp; submitting a pull request</h3>
+        <p>The full dataset and dashboard source code are openly available at <a href="https://github.com/SMARTBiomaterials/stim-dashboard" target="_blank" rel="noopener noreferrer" style="color:var(--accent)">github.com/SMARTBiomaterials/stim-dashboard</a>.</p>
+        <p>To contribute new data:</p>
+        <p>1. <strong>Fork</strong> the repository using the Fork button on GitHub — this creates your own copy.</p>
+        <p>2. <strong>Edit</strong> <code>data.json</code> in your fork, adding your new records following the schema above.</p>
+        <p>3. <strong>Open a pull request</strong> from your fork back to the main repository — go to the Pull Requests tab and click New Pull Request. Include the paper DOI and a brief description of what you've added.</p>
+        <p>Pull requests are reviewed by the SMART Biomaterials team before merging. Once accepted, the dashboard updates automatically.</p>
       </div>
+    </div>
+  </main>
+</div>
     </div>
   </main>
 </div>
