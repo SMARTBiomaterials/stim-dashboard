@@ -4,7 +4,7 @@
 
 An open, interactive dataset and visualisation dashboard for the systematic data-driven review of in vitro electrical and mechanical stimulation of fibroblasts and keratinocytes. Built from 563 experimental conditions extracted from the peer-reviewed literature, with fold-change outcomes normalised to unstimulated controls.
 
-> **Cite as:** Burgess MK, Marsh EF, Lucian VM, Nair M (2026). *A Data-Driven Review of in vitro Electrical and Mechanical Stimulation for Post-Inflammatory Wound Healing*. DOI: pending.
+> **Cite as:** Burgess MK, Marsh EF, Lucian VM, Nair M (2026). *A Data-Driven Review of in vitro Electrical and Mechanical Stimulation for Post-Acute Phase Wound Healing*. DOI: pending.
 
 ---
 
